@@ -3,7 +3,7 @@ package main
 import (
 	"runtime"
 
-	"./routers"
+	"github.com/Quorumsco/oauth2/urls"
 	"github.com/codegangsta/cli"
 	"github.com/iogo-framework/applications"
 	"github.com/iogo-framework/cmd"
@@ -38,7 +38,7 @@ func serve(ctx *cli.Context) error {
 		return err
 	}
 
-	app.Load(routers.URLs)
+	app.Load(urls.URLs)
 	app.Serve()
 
 	return nil

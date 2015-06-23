@@ -1,16 +1,15 @@
-package routers
+package urls
 
 import (
 	"net/http"
 	"path/filepath"
 
-	"../components/application"
-	"../controllers"
-	"github.com/silverwyrda/iogo"
+	"github.com/iogo-framework/applications"
+	"github.com/iogo-framework/router"
 )
 
-func URLs(app *application.Application) {
-	app.Use(iogo.Logger)
+func URLs(app *applications.Application) {
+	app.Use(router.Logger)
 	//app.Use(app.ApplyTemplates)
 	//app.Use(app.ApplyDB)
 

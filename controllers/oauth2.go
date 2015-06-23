@@ -3,9 +3,9 @@ package controllers
 import (
 	"net/http"
 
-	"../components/logs"
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
+	"github.com/iogo-framework/logs"
 )
 
 var server *osin.Server

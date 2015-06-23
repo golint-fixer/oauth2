@@ -3,11 +3,11 @@ package main
 import (
 	"runtime"
 
-	"./components/application"
-	"./components/cmd"
-	"./components/settings"
 	"./routers"
 	"github.com/codegangsta/cli"
+	"github.com/iogo-framework/applications"
+	"github.com/iogo-framework/cmd"
+	"github.com/iogo-framework/settings"
 )
 
 func init() {
@@ -29,12 +29,12 @@ func main() {
 }
 
 func serve(ctx *cli.Context) error {
-	var app *application.Application
+	var app *applications.Application
 	var err error
 
 	settings.Port = ctx.String("port")
 
-	if app, err = application.New(); err != nil {
+	if app, err = applications.New(); err != nil {
 		return err
 	}
 

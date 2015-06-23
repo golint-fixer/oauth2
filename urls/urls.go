@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/Quorumsco/oauth2/controllers"
 	"github.com/iogo-framework/applications"
 	"github.com/iogo-framework/router"
 )

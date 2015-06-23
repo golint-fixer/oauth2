@@ -3,11 +3,11 @@ package main
 import (
 	"runtime"
 
-	"github.com/Quorumsco/oauth2/urls"
+	"github.com/Quorumsco/oauth2/controllers"
 	"github.com/codegangsta/cli"
-	"github.com/iogo-framework/applications"
+	"github.com/iogo-framework/application"
 	"github.com/iogo-framework/cmd"
-	"github.com/iogo-framework/settings"
+	"github.com/iogo-framework/router"
 )
 
 func init() {
@@ -22,24 +22,28 @@ func main() {
 	cmd.Before = serve
 	cmd.Flags = append(cmd.Flags, []cli.Flag{
 		cli.StringFlag{"cpu, cpuprofile", "", "cpu profiling", ""},
-		cli.StringFlag{"port, p", "8080", "server listening port", ""},
+		cli.IntFlag{"port, p", 8080, "server listening port", ""},
 		cli.HelpFlag,
 	}...)
 	cmd.RunAndExitOnError()
 }
 
 func serve(ctx *cli.Context) error {
-	var app *applications.Application
+	var app *application.Application
 	var err error
 
-	settings.Port = ctx.String("port")
-
-	if app, err = applications.New(); err != nil {
+	if app, err = application.New(); err != nil {
 		return err
 	}
 
-	app.Load(urls.URLs)
-	app.Serve()
+	app.Mux = router.New()
+	app.Use(router.Logger)
+	app.Get("/authorize", controllers.Authorize)
+	app.Post("/authorize", controllers.Authorize)
+	app.Get("/token", controllers.Token)
+	app.Post("/token", controllers.Token)
+
+	app.Serve(ctx.Int("port"))
 
 	return nil
 }

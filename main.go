@@ -5,7 +5,9 @@ import (
 
 	"gopkg.in/redis.v3"
 
+	"github.com/Quorumsco/oauth2/components"
 	"github.com/Quorumsco/oauth2/controllers"
+	"github.com/RangelReale/osin"
 	"github.com/codegangsta/cli"
 	"github.com/iogo-framework/application"
 	"github.com/iogo-framework/cmd"
@@ -47,7 +49,16 @@ func serve(ctx *cli.Context) error {
 	}
 	logs.Debug("Connected to Redis at %s", ctx.String("redis"))
 
+	cfg := osin.NewServerConfig()
+	cfg.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN}
+	cfg.AllowedAccessTypes = osin.AllowedAccessType{osin.AUTHORIZATION_CODE,
+		osin.REFRESH_TOKEN, osin.PASSWORD}
+
+	server := osin.NewServer(cfg, components.NewRedisStorage(client))
+	app.Components["OAuth"] = server
+
 	app.Mux = router.New()
+	app.Use(app.Apply)
 	app.Use(router.Logger)
 	app.Get("/authorize", controllers.Authorize)
 	app.Post("/authorize", controllers.Authorize)

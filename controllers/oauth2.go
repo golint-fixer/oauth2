@@ -5,22 +5,18 @@ import (
 
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
+	"github.com/iogo-framework/application"
 	"github.com/iogo-framework/logs"
+	"github.com/iogo-framework/router"
 )
 
-var server *osin.Server
-
-func init() {
-	cfg := osin.NewServerConfig()
-	cfg.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN}
-	cfg.AllowedAccessTypes = osin.AllowedAccessType{osin.AUTHORIZATION_CODE,
-		osin.REFRESH_TOKEN, osin.PASSWORD}
-
-	server = osin.NewServer(cfg, example.NewTestStorage())
+func OAuthComponent(r *http.Request) *osin.Server {
+	return router.GetContext(r).Env["Application"].(*application.Application).Components["OAuth"].(*osin.Server)
 }
 
 // Authorize endpoint
 func Authorize(w http.ResponseWriter, r *http.Request) {
+	server := OAuthComponent(r)
 	resp := server.NewResponse()
 	defer resp.Close()
 
@@ -40,6 +36,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 
 // Token endpoint
 func Token(w http.ResponseWriter, r *http.Request) {
+	server := OAuthComponent(r)
 	resp := server.NewResponse()
 	defer resp.Close()
 

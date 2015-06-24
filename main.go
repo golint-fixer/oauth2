@@ -3,10 +3,13 @@ package main
 import (
 	"runtime"
 
+	"gopkg.in/redis.v3"
+
 	"github.com/Quorumsco/oauth2/controllers"
 	"github.com/codegangsta/cli"
 	"github.com/iogo-framework/application"
 	"github.com/iogo-framework/cmd"
+	"github.com/iogo-framework/logs"
 	"github.com/iogo-framework/router"
 )
 
@@ -21,8 +24,8 @@ func main() {
 	cmd.Version = "0.0.1"
 	cmd.Before = serve
 	cmd.Flags = append(cmd.Flags, []cli.Flag{
-		cli.StringFlag{"cpu, cpuprofile", "", "cpu profiling", ""},
-		cli.IntFlag{"port, p", 8080, "server listening port", ""},
+		cli.StringFlag{Name: "listen, l", Value: "localhost:8080", Usage: "listening host:port"},
+		cli.StringFlag{Name: "redis, r", Value: "localhost:6379", Usage: "redis host:port"},
 		cli.HelpFlag,
 	}...)
 	cmd.RunAndExitOnError()
@@ -36,6 +39,14 @@ func serve(ctx *cli.Context) error {
 		return err
 	}
 
+	client := redis.NewClient(&redis.Options{Addr: ctx.String("redis")})
+	app.Components["Redis"] = client
+
+	if _, err := client.Ping().Result(); err != nil {
+		return err
+	}
+	logs.Debug("Connected to Redis at %s", ctx.String("redis"))
+
 	app.Mux = router.New()
 	app.Use(router.Logger)
 	app.Get("/authorize", controllers.Authorize)
@@ -43,7 +54,7 @@ func serve(ctx *cli.Context) error {
 	app.Get("/token", controllers.Token)
 	app.Post("/token", controllers.Token)
 
-	app.Serve("localhost", ctx.Int("port"))
+	app.Serve(ctx.String("listen"))
 
 	return nil
 }

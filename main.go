@@ -43,7 +43,7 @@ func serve(ctx *cli.Context) error {
 	app.Get("/token", controllers.Token)
 	app.Post("/token", controllers.Token)
 
-	app.Serve(ctx.Int("port"))
+	app.Serve("localhost", ctx.Int("port"))
 
 	return nil
 }

@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"errors"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
@@ -54,7 +57,41 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		server.FinishAccessRequest(resp, r, ar)
 	}
 	if resp.IsError && resp.InternalError != nil {
-		logs.Error("%s\n", resp.InternalError)
+		logs.Error("%s", resp.InternalError)
+	}
+	osin.OutputJSON(resp, w, r)
+}
+
+func parseBearerToken(auth string) (string, error) {
+	if !strings.HasPrefix(auth, "Bearer ") {
+		return "", errors.New("Not a bearer authorization header")
+	}
+	return strings.TrimPrefix(auth, "Bearer "), nil
+}
+
+func Test(w http.ResponseWriter, r *http.Request) {
+	var token string
+	var err error
+
+	if token, err = parseBearerToken(r.Header.Get("Authorization")); err != nil {
+		return
+	}
+
+	server := OAuthComponent(r)
+	access, err := server.Storage.LoadAccess(token)
+	if err != nil {
+		return
+	}
+	io.WriteString(w, "Hello "+access.Client.GetId())
+}
+
+func Info(w http.ResponseWriter, r *http.Request) {
+	server := OAuthComponent(r)
+	resp := server.NewResponse()
+	defer resp.Close()
+
+	if ir := server.HandleInfoRequest(resp, r); ir != nil {
+		server.FinishInfoRequest(resp, r, ir)
 	}
 	osin.OutputJSON(resp, w, r)
 }

@@ -26,8 +26,10 @@ func main() {
 	cmd.Version = "0.0.1"
 	cmd.Before = serve
 	cmd.Flags = append(cmd.Flags, []cli.Flag{
-		cli.StringFlag{Name: "listen, l", Value: "localhost:8080", Usage: "listening host:port"},
+		cli.StringFlag{Name: "listen, l", Value: "localhost:8080", Usage: "http listening host:port"},
 		cli.StringFlag{Name: "redis, r", Value: "localhost:6379", Usage: "redis host:port"},
+		cli.StringFlag{Name: "postgres, p", Value: "localhost:5432", Usage: "postgresql host:port"},
+		cli.BoolFlag{Name: "debug, d", Usage: "print debug information"},
 		cli.HelpFlag,
 	}...)
 	cmd.RunAndExitOnError()
@@ -58,12 +60,17 @@ func serve(ctx *cli.Context) error {
 	app.Components["OAuth"] = server
 
 	app.Mux = router.New()
+
+	if ctx.Bool("debug") {
+		app.Use(router.Logger)
+	}
+
 	app.Use(app.Apply)
-	app.Use(router.Logger)
 	app.Get("/authorize", controllers.Authorize)
-	app.Post("/authorize", controllers.Authorize)
-	app.Get("/token", controllers.Token)
 	app.Post("/token", controllers.Token)
+	app.Get("/info", controllers.Info)
+
+	app.Get("/test", controllers.Test)
 
 	app.Serve(ctx.String("listen"))
 

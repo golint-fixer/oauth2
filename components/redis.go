@@ -2,13 +2,13 @@ package components
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
 	"gopkg.in/redis.v3"
 
 	"github.com/RangelReale/osin"
+	"github.com/iogo-framework/logs"
 )
 
 type RedisStorage struct {
@@ -46,21 +46,41 @@ func (s *RedisStorage) Close() {
 }
 
 func (s *RedisStorage) GetClient(id string) (osin.Client, error) {
-	fmt.Printf("GetClient: %s\n", id)
+	logs.Debug("GetClientDatabase: %s", id)
 	if c, ok := s.clients[id]; ok {
+		s.client.HMSet(id,
+			"secret", c.GetSecret(),
+			"redirect_uri", c.GetRedirectUri(),
+		)
 		return c, nil
 	}
 	return nil, errors.New("Client not found")
 }
 
+func (s *RedisStorage) getClient(id string) (osin.Client, error) {
+	logs.Debug("GetClientCache: %s", id)
+	c_map, err := s.client.HGetAllMap(id).Result()
+	if len(c_map) == 0 || err != nil {
+		return s.GetClient(id)
+	}
+
+	client := &osin.DefaultClient{
+		Id:          id,
+		Secret:      c_map["secret"],
+		RedirectUri: c_map["redirect_uri"],
+	}
+
+	return client, nil
+}
+
 func (s *RedisStorage) SetClient(id string, client osin.Client) error {
-	fmt.Printf("SetClient: %s\n", id)
+	logs.Debug("SetClient: %s", id)
 	s.clients[id] = client
 	return nil
 }
 
 func (s *RedisStorage) SaveAuthorize(data *osin.AuthorizeData) error {
-	fmt.Printf("SaveAuthorize: %s\n", data.Code)
+	logs.Debug("SaveAuthorize: %s", data.Code)
 
 	binary, _ := data.CreatedAt.MarshalBinary()
 	s.client.HMSet(data.Code,
@@ -72,18 +92,22 @@ func (s *RedisStorage) SaveAuthorize(data *osin.AuthorizeData) error {
 		"created_at", string(binary),
 	).Result()
 	s.client.Expire(data.Code, time.Duration(data.ExpiresIn)*time.Second).Result()
+	s.client.Expire(data.Client.GetId(), time.Duration(data.ExpiresIn)*time.Second).Result()
 	return nil
 }
 
 func (s *RedisStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
-	fmt.Printf("LoadAuthorize: %s\n", code)
+	logs.Debug("LoadAuthorize: %s", code)
 
 	d_map, err := s.client.HGetAllMap(code).Result()
 	if err != nil {
 		return nil, errors.New("Authorize not found")
 	}
 
-	client, _ := s.GetClient(d_map["client"])
+	client, err := s.getClient(d_map["client"])
+	if err != nil {
+		return nil, err
+	}
 	expires_in, _ := strconv.Atoi(d_map["expires_in"])
 	created_at := new(time.Time)
 	created_at.UnmarshalBinary([]byte(d_map["created_at"]))
@@ -99,13 +123,13 @@ func (s *RedisStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 }
 
 func (s *RedisStorage) RemoveAuthorize(code string) error {
-	fmt.Printf("RemoveAuthorize: %s\n", code)
+	logs.Debug("RemoveAuthorize: %s", code)
 	s.client.Del(code).Result()
 	return nil
 }
 
 func (s *RedisStorage) SaveAccess(data *osin.AccessData) error {
-	fmt.Printf("SaveAccess: %s\n", data.AccessToken)
+	logs.Debug("SaveAccess: %s", data.AccessToken)
 	s.access[data.AccessToken] = data
 	if data.RefreshToken != "" {
 		s.refresh[data.RefreshToken] = data.AccessToken
@@ -129,14 +153,17 @@ func (s *RedisStorage) SaveAccess(data *osin.AccessData) error {
 }
 
 func (s *RedisStorage) LoadAccess(code string) (*osin.AccessData, error) {
-	fmt.Printf("LoadAccess: %s\n", code)
+	logs.Debug("LoadAccess: %s", code)
 
 	d_map, err := s.client.HGetAllMap(code).Result()
-	if err != nil {
+	if len(d_map) == 0 || err != nil {
 		return nil, errors.New("Authorize not found")
 	}
 
-	client, _ := s.GetClient(d_map["client"])
+	client, err := s.getClient(d_map["client"])
+	if err != nil {
+		return nil, err
+	}
 	expires_in, _ := strconv.Atoi(d_map["expires_in"])
 	created_at := new(time.Time)
 	created_at.UnmarshalBinary([]byte(d_map["created_at"]))
@@ -152,13 +179,13 @@ func (s *RedisStorage) LoadAccess(code string) (*osin.AccessData, error) {
 }
 
 func (s *RedisStorage) RemoveAccess(code string) error {
-	fmt.Printf("RemoveAccess: %s\n", code)
+	logs.Debug("RemoveAccess: %s", code)
 	s.client.Del(code).Result()
 	return nil
 }
 
 func (s *RedisStorage) LoadRefresh(code string) (*osin.AccessData, error) {
-	fmt.Printf("LoadRefresh: %s\n", code)
+	logs.Debug("LoadRefresh: %s\n", code)
 	d, err := s.client.Get(code).Result()
 	if err != nil {
 		return nil, errors.New("Authorize not found")
@@ -167,7 +194,7 @@ func (s *RedisStorage) LoadRefresh(code string) (*osin.AccessData, error) {
 }
 
 func (s *RedisStorage) RemoveRefresh(code string) error {
-	fmt.Printf("RemoveRefresh: %s\n", code)
+	logs.Debug("RemoveRefresh: %s\n", code)
 	s.client.Del(code).Result()
 	return nil
 }

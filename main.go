@@ -5,14 +5,14 @@ import (
 
 	"gopkg.in/redis.v3"
 
-	"github.com/Quorumsco/oauth2/components"
-	"github.com/Quorumsco/oauth2/controllers"
 	"github.com/RangelReale/osin"
 	"github.com/codegangsta/cli"
 	"github.com/iogo-framework/application"
 	"github.com/iogo-framework/cmd"
 	"github.com/iogo-framework/logs"
 	"github.com/iogo-framework/router"
+	"github.com/quorumsco/oauth2/components"
+	"github.com/quorumsco/oauth2/controllers"
 )
 
 func init() {

@@ -44,12 +44,12 @@ func serve(ctx *cli.Context) error {
 	}
 
 	client := redis.NewClient(&redis.Options{Addr: ctx.String("redis")})
-	app.Components["Redis"] = client
 
 	if _, err := client.Ping().Result(); err != nil {
 		return err
 	}
 	logs.Debug("Connected to Redis at %s", ctx.String("redis"))
+	app.Components["Redis"] = client
 
 	cfg := osin.NewServerConfig()
 	cfg.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN}

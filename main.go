@@ -26,9 +26,9 @@ func main() {
 	cmd.Version = "0.0.1"
 	cmd.Before = serve
 	cmd.Flags = append(cmd.Flags, []cli.Flag{
-		cli.StringFlag{Name: "listen, l", Value: "localhost:8080", Usage: "http listening host:port"},
+		cli.StringFlag{Name: "listen, l", Value: "0.0.0.0:8080", Usage: "server listening host:port"},
 		cli.StringFlag{Name: "redis, r", Value: "localhost:6379", Usage: "redis host:port"},
-		cli.StringFlag{Name: "postgres, p", Value: "localhost:5432", Usage: "postgresql host:port"},
+		cli.StringFlag{Name: "postgres, s", Value: "localhost:5432", Usage: "postgresql host:port"},
 		cli.BoolFlag{Name: "debug, d", Usage: "print debug information"},
 		cli.HelpFlag,
 	}...)
@@ -37,11 +37,8 @@ func main() {
 
 func serve(ctx *cli.Context) error {
 	var app *application.Application
-	var err error
 
-	if app, err = application.New(); err != nil {
-		return err
-	}
+	app = application.New()
 
 	client := redis.NewClient(&redis.Options{Addr: ctx.String("redis")})
 
@@ -58,8 +55,7 @@ func serve(ctx *cli.Context) error {
 
 	server := osin.NewServer(cfg, components.NewRedisStorage(client))
 	app.Components["OAuth"] = server
-
-	app.Mux = router.New()
+	app.Components["Mux"] = router.New()
 
 	if ctx.Bool("debug") {
 		app.Use(router.Logger)

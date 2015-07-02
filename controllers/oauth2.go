@@ -14,7 +14,7 @@ import (
 )
 
 func OAuthComponent(r *http.Request) *osin.Server {
-	return router.GetContext(r).Env["Application"].(*application.Application).Components["OAuth"].(*osin.Server)
+	return router.Context(r).Env["Application"].(*application.Application).Components["OAuth"].(*osin.Server)
 }
 
 // Authorize endpoint
@@ -32,7 +32,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 		server.FinishAuthorizeRequest(resp, r, ar)
 	}
 	if resp.IsError && resp.InternalError != nil {
-		logs.Error("%s\n", resp.InternalError)
+		logs.Error("%s", resp.InternalError)
 	}
 	osin.OutputJSON(resp, w, r)
 }

@@ -69,7 +69,5 @@ func serve(ctx *cli.Context) error {
 
 	app.Get("/test", controllers.Test)
 
-	app.Serve(ctx.String("listen"))
-
-	return nil
+	return app.Serve(ctx.String("listen"))
 }

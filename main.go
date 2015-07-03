@@ -36,12 +36,13 @@ func main() {
 }
 
 func serve(ctx *cli.Context) error {
-	var app *application.Application
+	if ctx.Bool("debug") {
+		logs.Level(logs.DebugLevel)
+	}
 
-	app = application.New()
+	var app = application.New()
 
 	client := redis.NewClient(&redis.Options{Addr: ctx.String("redis")})
-
 	if _, err := client.Ping().Result(); err != nil {
 		return err
 	}

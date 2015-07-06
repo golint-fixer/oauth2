@@ -29,7 +29,7 @@ func main() {
 		cli.StringFlag{Name: "listen, l", Value: "0.0.0.0:8080", Usage: "server listening host:port"},
 		cli.StringFlag{Name: "redis, r", Value: "localhost:6379", Usage: "redis host:port"},
 		cli.StringFlag{Name: "postgres, s", Value: "localhost:5432", Usage: "postgresql host:port"},
-		cli.BoolFlag{Name: "debug, d", Usage: "print debug information"},
+		cli.BoolFlag{Name: "debug, d", Usage: "print debug information", EnvVar: "DEBUG"},
 		cli.HelpFlag,
 	}...)
 	cmd.RunAndExitOnError()

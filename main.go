@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime"
 
 	"gopkg.in/redis.v3"
@@ -45,11 +46,12 @@ func serve(ctx *cli.Context) error {
 		logs.Level(logs.DebugLevel)
 	}
 
-	client := redis.NewClient(&redis.Options{Addr: ctx.String("redis")})
+	redisHostPort := fmt.Sprintf("%s:%d", ctx.String("redis-host"), ctx.Int("redis-port"))
+	client := redis.NewClient(&redis.Options{Addr: redisHostPort})
 	if _, err := client.Ping().Result(); err != nil {
 		return err
 	}
-	logs.Debug("Connected to Redis at %s", ctx.String("redis"))
+	logs.Debug("Connected to Redis at %s", redisHostPort)
 	app.Components["Redis"] = client
 
 	cfg := osin.NewServerConfig()
@@ -72,5 +74,5 @@ func serve(ctx *cli.Context) error {
 
 	app.Get("/test", controllers.Test)
 
-	return app.Serve(ctx.String("listen"))
+	return app.Serve(fmt.Sprintf("%s:%d", ctx.String("listen-host"), ctx.Int("listen-port")))
 }

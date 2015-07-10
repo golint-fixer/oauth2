@@ -5,7 +5,7 @@ then
     npm install -g dredd
 fi
 go build
-./oauth2 -m &
+./oauth2 -c configs/test.json &
 sleep 3
 PID=$!
 dredd apiary.apib http://localhost:8080/

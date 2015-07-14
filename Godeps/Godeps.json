@@ -1,9 +1,6 @@
 {
 	"ImportPath": "github.com/quorumsco/oauth2",
 	"GoVersion": "go1.4.2",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/RangelReale/osin",
@@ -34,6 +31,10 @@
 		{
 			"ImportPath": "github.com/iogo-framework/router",
 			"Rev": "655fbf5f1231876623cadba9edd1f54cfd16816a"
+		},
+		{
+			"ImportPath": "github.com/iogo-framework/settings",
+			"Rev": "5fe0c810c3b4b51b1f6a8eab97ce13589f52148c"
 		},
 		{
 			"ImportPath": "github.com/pborman/uuid",

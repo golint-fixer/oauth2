@@ -32,7 +32,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 		server.FinishAuthorizeRequest(resp, r, ar)
 	}
 	if resp.IsError && resp.InternalError != nil {
-		logs.Error("%s", resp.InternalError)
+		logs.Error("%s", resp.InternalError.String())
 	}
 	osin.OutputJSON(resp, w, r)
 }
@@ -57,7 +57,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		server.FinishAccessRequest(resp, r, ar)
 	}
 	if resp.IsError && resp.InternalError != nil {
-		logs.Error("%s", resp.InternalError)
+		logs.Error("%s", resp.InternalError.String())
 	}
 	osin.OutputJSON(resp, w, r)
 }

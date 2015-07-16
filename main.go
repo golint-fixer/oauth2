@@ -70,9 +70,9 @@ func serve(ctx *cli.Context) error {
 
 	app.Use(app.Apply)
 
-	app.Get("/authorize", controllers.Authorize)
-	app.Post("/token", controllers.Token)
-	app.Get("/info", controllers.Info)
+	app.Get("/oauth2/authorize", controllers.Authorize)
+	app.Post("/oauth2/token", controllers.Token)
+	app.Get("/oauth2/info", controllers.Info)
 
 	app.Get("/test", controllers.Test)
 

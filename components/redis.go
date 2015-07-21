@@ -142,6 +142,7 @@ func (s *RedisStorage) SaveAccess(data *osin.AccessData) error {
 		"scope", data.Scope,
 		"redirect_uri", data.RedirectUri,
 		"created_at", string(binary),
+		"user_data", data.UserData.(string),
 	).Result()
 	s.client.Expire(data.AccessToken, time.Duration(data.ExpiresIn)*time.Second).Result()
 
@@ -174,6 +175,7 @@ func (s *RedisStorage) LoadAccess(code string) (*osin.AccessData, error) {
 		Scope:       d_map["scope"],
 		RedirectUri: d_map["redirect_uri"],
 		CreatedAt:   *created_at,
+		UserData:    d_map["user_data"],
 	}
 	return d, nil
 }

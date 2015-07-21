@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
@@ -52,6 +53,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		case osin.PASSWORD:
 			if ar.Username == "test" && ar.Password == "test" {
 				ar.Authorized = true
+				ar.UserData = ar.Username
 			}
 		}
 		server.FinishAccessRequest(resp, r, ar)
@@ -91,7 +93,25 @@ func Info(w http.ResponseWriter, r *http.Request) {
 	defer resp.Close()
 
 	if ir := server.HandleInfoRequest(resp, r); ir != nil {
-		server.FinishInfoRequest(resp, r, ir)
+		// don't process if is already an error
+		if resp.IsError {
+			return
+		}
+
+		// output data
+		resp.Output["client_id"] = ir.AccessData.Client.GetId()
+		// resp.Output["access_token"] = ir.AccessData.AccessToken
+		resp.Output["token_type"] = server.Config.TokenType
+		resp.Output["expires_in"] = ir.AccessData.CreatedAt.Add(time.Duration(ir.AccessData.ExpiresIn)*time.Second).Sub(server.Now()) / time.Second
+		if ir.AccessData.RefreshToken != "" {
+			resp.Output["refresh_token"] = ir.AccessData.RefreshToken
+		}
+		if ir.AccessData.Scope != "" {
+			resp.Output["scope"] = ir.AccessData.Scope
+		}
+		if ir.AccessData.UserData != nil {
+			resp.Output["owner"] = ir.AccessData.UserData.(string)
+		}
 	}
 	osin.OutputJSON(resp, w, r)
 }

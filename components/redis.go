@@ -8,7 +8,7 @@ import (
 	"gopkg.in/redis.v3"
 
 	"github.com/RangelReale/osin"
-	"github.com/iogo-framework/logs"
+	"github.com/quorumsco/logs"
 )
 
 type RedisStorage struct {

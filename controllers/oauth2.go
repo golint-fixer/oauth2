@@ -9,9 +9,9 @@ import (
 
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
-	"github.com/iogo-framework/application"
-	"github.com/iogo-framework/logs"
-	"github.com/iogo-framework/router"
+	"github.com/quorumsco/application"
+	"github.com/quorumsco/logs"
+	"github.com/quorumsco/router"
 )
 
 func OAuthComponent(r *http.Request) *osin.Server {

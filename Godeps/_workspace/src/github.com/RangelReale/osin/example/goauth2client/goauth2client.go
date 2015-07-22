@@ -5,12 +5,11 @@ package main
 // http://localhost:14000/app
 
 import (
-	"fmt"
-	"net/http"
-
 	"code.google.com/p/goauth2/oauth"
+	"fmt"
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
+	"net/http"
 )
 
 func main() {

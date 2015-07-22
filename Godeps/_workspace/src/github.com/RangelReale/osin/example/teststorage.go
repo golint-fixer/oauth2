@@ -3,7 +3,6 @@ package example
 import (
 	"errors"
 	"fmt"
-
 	"github.com/RangelReale/osin"
 )
 

@@ -28,7 +28,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 		if !example.HandleLoginPage(ar, w, r) {
 			return
 		}
-		ar.UserData = struct{ Login string }{Login: "test"}
+		ar.UserData = "test" // Get user_id
 		ar.Authorized = true
 		server.FinishAuthorizeRequest(resp, r, ar)
 	}

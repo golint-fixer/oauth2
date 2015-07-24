@@ -29,7 +29,6 @@ func main() {
 	cmd.Before = serve
 	cmd.Flags = append(cmd.Flags, []cli.Flag{
 		cli.StringFlag{Name: "config, c", Usage: "configuration file", EnvVar: "CONFIG"},
-		cli.BoolFlag{Name: "debug, d", Usage: "print debug information"},
 		cli.HelpFlag,
 	}...)
 	cmd.RunAndExitOnError()
@@ -37,13 +36,17 @@ func main() {
 
 func serve(ctx *cli.Context) error {
 	var app = application.New()
+	var err error
 
-	config, err := settings.Parse(ctx.String("config"))
-	if err != nil && ctx.String("config") != "" {
-		logs.Error(err)
+	var config settings.Config
+	if ctx.String("config") != "" {
+		config, err = settings.Parse(ctx.String("config"))
+		if err != nil {
+			logs.Error(err)
+		}
 	}
 
-	if ctx.Bool("debug") || config.Debug() {
+	if config.Debug() {
 		logs.Level(logs.DebugLevel)
 	}
 
@@ -64,7 +67,7 @@ func serve(ctx *cli.Context) error {
 	app.Components["OAuth"] = oauthServer
 	app.Components["Mux"] = router.New()
 
-	if ctx.Bool("debug") || config.Debug() {
+	if config.Debug() {
 		app.Use(router.Logger)
 	}
 

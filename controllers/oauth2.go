@@ -40,8 +40,10 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 
 // Token endpoint
 func Token(w http.ResponseWriter, r *http.Request) {
-	server := OAuthComponent(r)
-	resp := server.NewResponse()
+	var (
+		server = OAuthComponent(r)
+		resp   = server.NewResponse()
+	)
 	defer resp.Close()
 
 	if ar := server.HandleAccessRequest(resp, r); ar != nil {
@@ -72,24 +74,30 @@ func parseBearerToken(auth string) (string, error) {
 }
 
 func Test(w http.ResponseWriter, r *http.Request) {
-	var token string
-	var err error
+	var (
+		token string
+		err   error
+	)
 
 	if token, err = parseBearerToken(r.Header.Get("Authorization")); err != nil {
 		return
 	}
 
-	server := OAuthComponent(r)
-	access, err := server.Storage.LoadAccess(token)
-	if err != nil {
+	var (
+		server = OAuthComponent(r)
+		access *osin.AccessData
+	)
+	if access, err = server.Storage.LoadAccess(token); err != nil {
 		return
 	}
 	io.WriteString(w, "Hello "+access.Client.GetId())
 }
 
 func Info(w http.ResponseWriter, r *http.Request) {
-	server := OAuthComponent(r)
-	resp := server.NewResponse()
+	var (
+		server = OAuthComponent(r)
+		resp   = server.NewResponse()
+	)
 	defer resp.Close()
 
 	if ir := server.HandleInfoRequest(resp, r); ir != nil {

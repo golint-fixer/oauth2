@@ -47,6 +47,7 @@ func (s *RedisStorage) Close() {
 
 func (s *RedisStorage) GetClient(id string) (osin.Client, error) {
 	logs.Debug("GetClientDatabase: %s", id)
+
 	if c, ok := s.clients[id]; ok {
 		s.client.HMSet(id,
 			"secret", c.GetSecret(),
@@ -59,6 +60,7 @@ func (s *RedisStorage) GetClient(id string) (osin.Client, error) {
 
 func (s *RedisStorage) getClient(id string) (osin.Client, error) {
 	logs.Debug("GetClientCache: %s", id)
+
 	c_map, err := s.client.HGetAllMap(id).Result()
 	if len(c_map) == 0 || err != nil {
 		return s.GetClient(id)
@@ -75,6 +77,7 @@ func (s *RedisStorage) getClient(id string) (osin.Client, error) {
 
 func (s *RedisStorage) SetClient(id string, client osin.Client) error {
 	logs.Debug("SetClient: %s", id)
+
 	s.clients[id] = client
 	return nil
 }
@@ -124,12 +127,14 @@ func (s *RedisStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 
 func (s *RedisStorage) RemoveAuthorize(code string) error {
 	logs.Debug("RemoveAuthorize: %s", code)
+
 	s.client.Del(code).Result()
 	return nil
 }
 
 func (s *RedisStorage) SaveAccess(data *osin.AccessData) error {
 	logs.Debug("SaveAccess: %s", data.AccessToken)
+
 	s.access[data.AccessToken] = data
 	if data.RefreshToken != "" {
 		s.refresh[data.RefreshToken] = data.AccessToken
@@ -182,12 +187,14 @@ func (s *RedisStorage) LoadAccess(code string) (*osin.AccessData, error) {
 
 func (s *RedisStorage) RemoveAccess(code string) error {
 	logs.Debug("RemoveAccess: %s", code)
+
 	s.client.Del(code).Result()
 	return nil
 }
 
 func (s *RedisStorage) LoadRefresh(code string) (*osin.AccessData, error) {
-	logs.Debug("LoadRefresh: %s\n", code)
+	logs.Debug("LoadRefresh: %s", code)
+
 	d, err := s.client.Get(code).Result()
 	if err != nil {
 		return nil, errors.New("Authorize not found")
@@ -196,7 +203,8 @@ func (s *RedisStorage) LoadRefresh(code string) (*osin.AccessData, error) {
 }
 
 func (s *RedisStorage) RemoveRefresh(code string) error {
-	logs.Debug("RemoveRefresh: %s\n", code)
+	logs.Debug("RemoveRefresh: %s", code)
+
 	s.client.Del(code).Result()
 	return nil
 }

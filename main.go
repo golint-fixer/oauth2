@@ -35,7 +35,6 @@ func main() {
 }
 
 func serve(ctx *cli.Context) error {
-	var app = application.New()
 	var err error
 
 	var config settings.Config
@@ -56,6 +55,8 @@ func serve(ctx *cli.Context) error {
 		return err
 	}
 	logs.Debug("Connected to Redis at %s", redisSettings.String())
+
+	var app = application.New()
 	app.Components["Redis"] = client
 
 	cfg := osin.NewServerConfig()

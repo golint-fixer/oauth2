@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -12,6 +14,7 @@ import (
 	"github.com/quorumsco/application"
 	"github.com/quorumsco/logs"
 	"github.com/quorumsco/router"
+	"github.com/quorumsco/settings"
 )
 
 func OAuthComponent(r *http.Request) *osin.Server {
@@ -38,8 +41,40 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
-func checkUser(ar *osin.AccessRequest) error {
+func request(method string, urlstr string, body io.ReadCloser) ([]byte, error) {
+	logs.Debug(method + " " + urlstr)
 
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlstr, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return ioutil.ReadAll(resp.Body)
+}
+
+func Service(method string, r *http.Request, service string, path string) ([]byte, error) {
+	s := router.Context(r).Env["Application"].(*application.Application).Components[service].(settings.Server)
+	urlstr := fmt.Sprintf("http://%s:%d%s", s.Host, s.Port, path)
+
+	fmt.Println("TEST : ")
+	fmt.Println(urlstr)
+	return request(method, urlstr, r.Body)
+}
+
+func checkUser(ar *osin.AccessRequest, w http.ResponseWriter, r *http.Request) error {
+	body, err := Service("GET", r, "Users", "/auth")
+	if err != nil {
+		logs.Error(err)
+		return err
+	}
+
+	fmt.Println(body)
 	return nil
 }
 
@@ -62,7 +97,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				ar.Authorized = true
 				ar.UserData = ar.Username
 			} else {
-				checkUser(ar)
+				checkUser(ar, w, r)
 			}
 
 		}

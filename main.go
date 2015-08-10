@@ -10,6 +10,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/quorumsco/application"
 	"github.com/quorumsco/cmd"
+	"github.com/quorumsco/gojimux"
 	"github.com/quorumsco/logs"
 	"github.com/quorumsco/oauth2/components"
 	"github.com/quorumsco/oauth2/controllers"
@@ -66,7 +67,15 @@ func serve(ctx *cli.Context) error {
 
 	oauthServer := osin.NewServer(cfg, components.NewRedisStorage(client))
 	app.Components["OAuth"] = oauthServer
-	app.Components["Mux"] = router.New()
+
+	users, err := config.CustomServer("users", "users", 8080)
+	if err != nil {
+		logs.Critical(err)
+		os.Exit(1)
+	}
+	app.Components["Users"] = users
+
+	app.Components["Mux"] = gojimux.New()
 
 	if config.Debug() {
 		app.Use(router.Logger)

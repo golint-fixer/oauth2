@@ -62,13 +62,11 @@ func Service(method string, r *http.Request, service string, path string) ([]byt
 	s := router.Context(r).Env["Application"].(*application.Application).Components[service].(settings.Server)
 	urlstr := fmt.Sprintf("http://%s:%d%s", s.Host, s.Port, path)
 
-	fmt.Println("TEST : ")
-	fmt.Println(urlstr)
 	return request(method, urlstr, r.Body)
 }
 
 func checkUser(ar *osin.AccessRequest, w http.ResponseWriter, r *http.Request) error {
-	body, err := Service("GET", r, "Users", "/auth")
+	body, err := Service("GET", r, "Users", "/users/auth")
 	if err != nil {
 		logs.Error(err)
 		return err

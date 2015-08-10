@@ -68,7 +68,7 @@ func serve(ctx *cli.Context) error {
 	oauthServer := osin.NewServer(cfg, components.NewRedisStorage(client))
 	app.Components["OAuth"] = oauthServer
 
-	users, err := config.CustomServer("users", "users", 8080)
+	users, err := config.CustomServer("users", "users", 8081)
 	if err != nil {
 		logs.Critical(err)
 		os.Exit(1)

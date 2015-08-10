@@ -38,6 +38,11 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
+func checkUser(ar *osin.AccessRequest) error {
+
+	return nil
+}
+
 // Token endpoint
 func Token(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -56,7 +61,10 @@ func Token(w http.ResponseWriter, r *http.Request) {
 			if ar.Username == "test" && ar.Password == "test" {
 				ar.Authorized = true
 				ar.UserData = ar.Username
+			} else {
+				checkUser(ar)
 			}
+
 		}
 		server.FinishAccessRequest(resp, r, ar)
 	}

@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +14,7 @@ import (
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
 	"github.com/quorumsco/application"
+	. "github.com/quorumsco/jsonapi"
 	"github.com/quorumsco/logs"
 	"github.com/quorumsco/router"
 	"github.com/quorumsco/settings"
@@ -41,11 +44,20 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
-func request(method string, urlstr string, body io.ReadCloser) ([]byte, error) {
+func request(method string, urlstr string, r *http.Request) ([]byte, error) {
 	logs.Debug(method + " " + urlstr)
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, urlstr, nil)
+
+	var tmp = make(map[string]string)
+	tmp["username"] = router.Context(r).Env["Username"].(string)
+	tmp["password"] = router.Context(r).Env["Password"].(string)
+	jsonBody, err := json.Marshal(tmp)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest(method, urlstr, bytes.NewBuffer(jsonBody))
+
 	if err != nil {
 		return nil, err
 	}
@@ -62,18 +74,26 @@ func Service(method string, r *http.Request, service string, path string) ([]byt
 	s := router.Context(r).Env["Application"].(*application.Application).Components[service].(settings.Server)
 	urlstr := fmt.Sprintf("http://%s:%d%s", s.Host, s.Port, path)
 
-	return request(method, urlstr, r.Body)
+	return request(method, urlstr, r)
 }
 
-func checkUser(ar *osin.AccessRequest, w http.ResponseWriter, r *http.Request) error {
-	body, err := Service("GET", r, "Users", "/users/auth")
+func checkUser(w http.ResponseWriter, r *http.Request) (uint, error) {
+	body, err := Service("POST", r, "Users", "/users/auth")
 	if err != nil {
 		logs.Error(err)
-		return err
+		return 0, err
 	}
-
-	fmt.Println(body)
-	return nil
+	infos := make(map[string]interface{})
+	if err := json.Unmarshal(body, &infos); err != nil {
+		logs.Error(err)
+		Fail(w, r, map[string]string{"Authentification": "Error"}, http.StatusBadRequest)
+		return 0, err
+	}
+	groupID := infos["group_id"]
+	if groupID == nil {
+		return 0, nil
+	}
+	return groupID.(uint), nil
 }
 
 // Token endpoint
@@ -95,9 +115,19 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				ar.Authorized = true
 				ar.UserData = ar.Username
 			} else {
-				checkUser(ar, w, r)
+				router.Context(r).Env["Username"] = ar.Username
+				router.Context(r).Env["Password"] = ar.Password
+				groupID, err := checkUser(w, r)
+				if err != nil || groupID == 0 {
+					resp.IsError = true
+					if err == nil {
+						resp.InternalError = errors.New("Wrong username or password")
+					} else {
+						resp.InternalError = err
+					}
+				}
+				ar.UserData = groupID
 			}
-
 		}
 		server.FinishAccessRequest(resp, r, ar)
 	}

@@ -113,7 +113,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		case osin.PASSWORD:
 			if ar.Username == "test" && ar.Password == "test" {
 				ar.Authorized = true
-				ar.UserData = ar.Username
+				ar.UserData = "1"
 			} else {
 				router.Context(r).Env["Username"] = ar.Username
 				router.Context(r).Env["Password"] = ar.Password
@@ -133,6 +133,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	}
 	if resp.IsError && resp.InternalError != nil {
 		logs.Error(resp.InternalError.Error())
+		Fail(w, r, map[string]interface{}{"User": resp.InternalError.Error()}, http.StatusBadRequest)
 	}
 	osin.OutputJSON(resp, w, r)
 }

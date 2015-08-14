@@ -36,7 +36,11 @@ func (s *UserSQL) Delete(u *User) error {
 }
 
 func (s *UserSQL) First(u *User) error {
-	s.DB.Find(u)
+	if u.Mail != nil && u.Password != nil {
+		s.DB.Where("mail = ?", u.Mail).Find(u)
+	} else {
+		s.DB.Find(u)
+	}
 
 	return s.DB.Error
 }

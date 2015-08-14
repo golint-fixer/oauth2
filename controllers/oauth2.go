@@ -43,22 +43,20 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 }
 
 func Auth(username string, password string, r *http.Request) (uint, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return 0, err
-	}
-
 	var (
-		u         = models.User{Mail: &username, Password: sPtr(string(passwordHash))}
+		u         = models.User{Mail: &username, Password: sPtr(password)}
 		db        = getDB(r)
 		userStore = models.UserStore(db)
 	)
-	if err = userStore.First(&u); err != nil {
+	if err := userStore.First(&u); err != nil {
 		logs.Error(err)
 		return 0, err
 	}
-	if u.GroupID == 0 {
+	if u.ID == 0 {
 		return 0, errors.New("No such user")
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(password)); err != nil {
+		return 0, errors.New("Wrong password")
 	}
 	return u.GroupID, nil
 }
@@ -91,13 +89,9 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				ar.UserData = "1"
 			} else {
 				groupID, err := checkUser(ar.Username, ar.Password, r)
-				if err != nil || groupID == 0 {
+				if err != nil {
 					resp.IsError = true
-					if err == nil {
-						resp.InternalError = errors.New("Wrong username or password")
-					} else {
-						resp.InternalError = err
-					}
+					resp.InternalError = err
 				}
 				ar.UserData = groupID
 			}

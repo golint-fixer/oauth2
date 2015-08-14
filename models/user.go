@@ -3,7 +3,7 @@ package models
 import "github.com/asaskevich/govalidator"
 
 type User struct {
-	ID        int64   `json:"id"`
+	ID        int64   `json:"id" gorm"primary_key"`
 	Mail      *string `sql:"not null"`
 	Password  *string `sql:"not null"`
 	Firstname *string `sql:"not null" json:"firstname"`

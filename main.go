@@ -95,6 +95,7 @@ func serve(ctx *cli.Context) error {
 	app.Components["Mux"] = gojimux.New()
 
 	if config.Debug() {
+		app.Components["DB"].(*gorm.DB).LogMode(true)
 		app.Use(router.Logger)
 	}
 

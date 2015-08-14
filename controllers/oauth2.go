@@ -1,23 +1,21 @@
 package controllers
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
 	"github.com/quorumsco/application"
 	. "github.com/quorumsco/jsonapi"
 	"github.com/quorumsco/logs"
+	"github.com/quorumsco/oauth2/models"
 	"github.com/quorumsco/router"
-	"github.com/quorumsco/settings"
 )
 
 func OAuthComponent(r *http.Request) *osin.Server {
@@ -44,7 +42,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
-func Auth(username string, password string) (uint, error) {
+func Auth(username string, password string, r *http.Request) (uint, error) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
@@ -57,18 +55,16 @@ func Auth(username string, password string) (uint, error) {
 	)
 	if err = userStore.First(&u); err != nil {
 		logs.Error(err)
-		Error(w, r, err.Error(), http.StatusInternalServerError)
 		return 0, err
 	}
 	if u.GroupID == 0 {
-		Fail(w, r, map[string]interface{}{"User": "No such user"}, http.StatusBadRequest)
 		return 0, errors.New("No such user")
 	}
 	return u.GroupID, nil
 }
 
-func checkUser(username string, password string) (uint, error) {
-	groupID, err := Auth(username, password)
+func checkUser(username string, password string, r *http.Request) (uint, error) {
+	groupID, err := Auth(username, password, r)
 	if err != nil || groupID == 0 {
 		return 0, err
 	}
@@ -94,7 +90,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				ar.Authorized = true
 				ar.UserData = "1"
 			} else {
-				groupID, err := checkUser(ar.Username, ar.Password)
+				groupID, err := checkUser(ar.Username, ar.Password, r)
 				if err != nil || groupID == 0 {
 					resp.IsError = true
 					if err == nil {

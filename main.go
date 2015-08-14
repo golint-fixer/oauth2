@@ -90,13 +90,6 @@ func serve(ctx *cli.Context) error {
 	oauthServer := osin.NewServer(cfg, components.NewRedisStorage(client))
 	app.Components["OAuth"] = oauthServer
 
-	users, err := config.CustomServer("users", "users", 8083)
-	if err != nil {
-		logs.Critical(err)
-		os.Exit(1)
-	}
-	app.Components["Users"] = users
-
 	app.Components["Templates"] = views.Templates()
 
 	app.Components["Mux"] = gojimux.New()
@@ -114,7 +107,6 @@ func serve(ctx *cli.Context) error {
 	app.Get("/test", controllers.Test)
 
 	app.Get("/users/register", controllers.Register)
-	app.Post("/users/auth", controllers.Auth)
 	app.Post("/users/register", controllers.Register)
 
 	server, err := config.Server()

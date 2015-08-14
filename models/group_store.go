@@ -17,39 +17,35 @@ func GroupStore(db *gorm.DB) GroupDS {
 	return &GroupSQL{DB: db}
 }
 
-// func (s *UserSQL) Save(u *User) error {
-// 	if u.ID == 0 {
-// 		s.DB.Create(u)
+func (s *GroupSQL) Save(g *Group) error {
+	if g.ID == 0 {
+		s.DB.Create(g)
 
-// 		return s.DB.Error
-// 	}
+		return s.DB.Error
+	}
 
-// 	s.DB.Save(u)
+	s.DB.Save(g)
 
-// 	return s.DB.Error
-// }
+	return s.DB.Error
+}
 
-// func (s *UserSQL) Delete(u *User) error {
-// 	s.DB.Delete(u)
+func (s *GroupSQL) Delete(g *Group) error {
+	s.DB.Delete(g)
 
-// 	return s.DB.Error
-// }
+	return s.DB.Error
+}
 
-// func (s *UserSQL) First(u *User) error {
-// 	if u.Mail != nil && u.Password != nil {
-// 		s.DB.Where("mail = ?", u.Mail).Find(u)
-// 	} else {
-// 		s.DB.Find(u)
-// 	}
+func (s *GroupSQL) First(g *Group) error {
+	s.DB.Find(g)
 
-// 	return s.DB.Error
-// }
+	return s.DB.Error
+}
 
-// func (s *UserSQL) Find() ([]User, error) {
-// 	var users []User
-// 	s.DB.Find(&users)
-// 	if s.DB.Error != nil {
-// 		return users, nil
-// 	}
-// 	return users, s.DB.Error
-// }
+func (s *GroupSQL) Find() ([]Group, error) {
+	var groups []Group
+	s.DB.Find(&groups)
+	if s.DB.Error != nil {
+		return groups, nil
+	}
+	return groups, s.DB.Error
+}

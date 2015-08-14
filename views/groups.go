@@ -1,6 +1,6 @@
 package views
 
-import "github.com/quorumsco/user/models"
+import "github.com/quorumsco/oauth2/models"
 
 type Groups struct {
 	Groups []models.Group `json:"groups"`

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,7 +43,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
-func Auth(username string, password string, r *http.Request) (uint, error) {
+func Auth(username string, password string, r *http.Request) (int, error) {
 	var (
 		u         = models.User{Mail: &username, Password: sPtr(password)}
 		db        = getDB(r)
@@ -58,10 +59,10 @@ func Auth(username string, password string, r *http.Request) (uint, error) {
 	if err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(password)); err != nil {
 		return 0, errors.New("Wrong password")
 	}
-	return u.GroupID, nil
+	return int(u.GroupID), nil
 }
 
-func checkUser(username string, password string, r *http.Request) (uint, error) {
+func checkUser(username string, password string, r *http.Request) (int, error) {
 	groupID, err := Auth(username, password, r)
 	if err != nil || groupID == 0 {
 		return 0, err
@@ -95,12 +96,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				} else {
 					ar.Authorized = true
 				}
-				logs.Debug(groupID)
-				if groupID == 0 {
-					ar.UserData = "0"
-				} else {
-					ar.UserData = string(groupID)
-				}
+				ar.UserData = strconv.Itoa(groupID)
 			}
 		}
 		server.FinishAccessRequest(resp, r, ar)

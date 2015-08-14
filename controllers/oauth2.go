@@ -44,56 +44,35 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
-func request(method string, urlstr string, r *http.Request) ([]byte, error) {
-	logs.Debug(method + " " + urlstr)
-
-	client := &http.Client{}
-
-	var tmp = make(map[string]string)
-	tmp["username"] = router.Context(r).Env["Username"].(string)
-	tmp["password"] = router.Context(r).Env["Password"].(string)
-	jsonBody, err := json.Marshal(tmp)
+func Auth(username string, password string) (uint, error) {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
-	}
-	req, err := http.NewRequest(method, urlstr, bytes.NewBuffer(jsonBody))
-
-	if err != nil {
-		return nil, err
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return ioutil.ReadAll(resp.Body)
-}
-
-func Service(method string, r *http.Request, service string, path string) ([]byte, error) {
-	s := router.Context(r).Env["Application"].(*application.Application).Components[service].(settings.Server)
-	urlstr := fmt.Sprintf("http://%s:%d%s", s.Host, s.Port, path)
-
-	return request(method, urlstr, r)
-}
-
-func checkUser(w http.ResponseWriter, r *http.Request) (uint, error) {
-	body, err := Service("POST", r, "Users", "/users/auth")
-	if err != nil {
-		logs.Error(err)
 		return 0, err
 	}
-	infos := make(map[string]interface{})
-	if err := json.Unmarshal(body, &infos); err != nil {
+
+	var (
+		u         = models.User{Mail: &username, Password: sPtr(string(passwordHash))}
+		db        = getDB(r)
+		userStore = models.UserStore(db)
+	)
+	if err = userStore.First(&u); err != nil {
 		logs.Error(err)
-		Fail(w, r, map[string]string{"Authentification": "Error"}, http.StatusBadRequest)
+		Error(w, r, err.Error(), http.StatusInternalServerError)
 		return 0, err
 	}
-	groupID := infos["group_id"]
-	if groupID == nil {
-		return 0, nil
+	if u.GroupID == 0 {
+		Fail(w, r, map[string]interface{}{"User": "No such user"}, http.StatusBadRequest)
+		return 0, errors.New("No such user")
 	}
-	return groupID.(uint), nil
+	return u.GroupID, nil
+}
+
+func checkUser(username string, password string) (uint, error) {
+	groupID, err := Auth(username, password)
+	if err != nil || groupID == 0 {
+		return 0, err
+	}
+	return groupID, nil
 }
 
 // Token endpoint
@@ -115,9 +94,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				ar.Authorized = true
 				ar.UserData = "1"
 			} else {
-				router.Context(r).Env["Username"] = ar.Username
-				router.Context(r).Env["Password"] = ar.Password
-				groupID, err := checkUser(w, r)
+				groupID, err := checkUser(ar.Username, ar.Password)
 				if err != nil || groupID == 0 {
 					resp.IsError = true
 					if err == nil {

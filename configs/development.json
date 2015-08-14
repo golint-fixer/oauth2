@@ -1,6 +1,8 @@
 {
   "settings": {
-    "debug": true
+      "debug": true,
+      "migrate": true,
+      "database": "sqlite3"
   },
   "components": {
     "server": {

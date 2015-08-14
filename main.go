@@ -8,12 +8,16 @@ import (
 
 	"github.com/RangelReale/osin"
 	"github.com/codegangsta/cli"
+	"github.com/jinzhu/gorm"
 	"github.com/quorumsco/application"
 	"github.com/quorumsco/cmd"
+	"github.com/quorumsco/databases"
 	"github.com/quorumsco/gojimux"
 	"github.com/quorumsco/logs"
 	"github.com/quorumsco/oauth2/components"
 	"github.com/quorumsco/oauth2/controllers"
+	"github.com/quorumsco/oauth2/models"
+	"github.com/quorumsco/oauth2/views"
 	"github.com/quorumsco/router"
 	"github.com/quorumsco/settings"
 )
@@ -50,6 +54,25 @@ func serve(ctx *cli.Context) error {
 		logs.Level(logs.DebugLevel)
 	}
 
+	dialect, args, err := config.SqlDB()
+	if err != nil {
+		logs.Critical(err)
+		os.Exit(1)
+	}
+	logs.Debug("database type: %s", dialect)
+
+	var app = application.New()
+	if app.Components["DB"], err = databases.InitGORM(dialect, args); err != nil {
+		logs.Critical(err)
+		os.Exit(1)
+	}
+	logs.Debug("connected to %s", args)
+
+	if config.Migrate() {
+		app.Components["DB"].(*gorm.DB).AutoMigrate(models.Models()...)
+		logs.Debug("database migrated successfully")
+	}
+
 	redisSettings, err := config.Redis()
 	client := redis.NewClient(&redis.Options{Addr: redisSettings.String()})
 	if _, err := client.Ping().Result(); err != nil {
@@ -57,7 +80,6 @@ func serve(ctx *cli.Context) error {
 	}
 	logs.Debug("Connected to Redis at %s", redisSettings.String())
 
-	var app = application.New()
 	app.Components["Redis"] = client
 
 	cfg := osin.NewServerConfig()
@@ -75,6 +97,8 @@ func serve(ctx *cli.Context) error {
 	}
 	app.Components["Users"] = users
 
+	app.Components["Templates"] = views.Templates()
+
 	app.Components["Mux"] = gojimux.New()
 
 	if config.Debug() {
@@ -88,6 +112,10 @@ func serve(ctx *cli.Context) error {
 	app.Get("/oauth2/info", controllers.Info)
 
 	app.Get("/test", controllers.Test)
+
+	app.Get("/users/register", controllers.Register)
+	app.Post("/users/auth", controllers.Auth)
+	app.Post("/users/register", controllers.Register)
 
 	server, err := config.Server()
 	if err != nil {

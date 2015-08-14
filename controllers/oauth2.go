@@ -95,7 +95,12 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				} else {
 					ar.Authorized = true
 				}
-				ar.UserData = string(groupID)
+				logs.Debug(groupID)
+				if groupID == 0 {
+					ar.UserData = "0"
+				} else {
+					ar.UserData = string(groupID)
+				}
 			}
 		}
 		server.FinishAccessRequest(resp, r, ar)

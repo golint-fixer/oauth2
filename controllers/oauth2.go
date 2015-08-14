@@ -92,8 +92,10 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					resp.IsError = true
 					resp.InternalError = err
+				} else {
+					ar.Authorized = true
 				}
-				ar.UserData = groupID
+				ar.UserData = string(groupID)
 			}
 		}
 		server.FinishAccessRequest(resp, r, ar)

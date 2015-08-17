@@ -2,23 +2,22 @@ package controllers
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/quorumsco/contacts/models"
-	"github.com/quorumsco/contacts/views"
 	. "github.com/quorumsco/jsonapi"
 	"github.com/quorumsco/logs"
+	"github.com/quorumsco/oauth2/models"
+	"github.com/quorumsco/oauth2/views"
 	"github.com/quorumsco/router"
 )
 
 func RetrieveGroupCollection(w http.ResponseWriter, r *http.Request) {
 	var (
-		err          error
-		groups       []models.Group
-		db           = getDB(r)
-		contactStore = models.ContactStore(db)
+		err        error
+		groups     []models.Group
+		db         = getDB(r)
+		groupStore = models.GroupStore(db)
 	)
 	if groups, err = groupStore.Find(); err != nil {
 		logs.Error(err)
@@ -38,9 +37,9 @@ func RetrieveGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		g            = models.Group{ID: uint(id)}
-		db           = getDB(r)
-		contactStore = models.ContactStore(db)
+		g          = models.Group{ID: uint(id)}
+		db         = getDB(r)
+		groupStore = models.GroupStore(db)
 	)
 	if err = groupStore.First(&g); err != nil {
 		if err == sql.ErrNoRows {
@@ -93,7 +92,7 @@ func UpdateGroup(w http.ResponseWriter, r *http.Request) {
 
 func CreateGroup(w http.ResponseWriter, r *http.Request) {
 	var (
-		g = new(models.Contact)
+		g = new(models.Group)
 
 		err error
 	)

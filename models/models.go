@@ -8,6 +8,6 @@ import (
 
 func Models() []interface{} {
 	return []interface{}{
-		&User{},
+		&User{}, &Group{},
 	}
 }

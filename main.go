@@ -112,7 +112,6 @@ func serve(ctx *cli.Context) error {
 
 	app.Get("/groups", controllers.RetrieveGroupCollection)
 	app.Post("/groups", controllers.CreateGroup)
-
 	app.Get("/groups/:id", controllers.RetrieveGroup)
 	app.Delete("/groups/:id", controllers.DeleteGroup)
 	app.Patch("/groups/:id", controllers.UpdateGroup)

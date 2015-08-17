@@ -96,7 +96,7 @@ func CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 		err error
 	)
-	if err := Request(&views.Group{Group: g}, r); err != nil {
+	if err = Request(&views.Group{Group: g}, r); err != nil {
 		logs.Debug(err)
 		Fail(w, r, map[string]interface{}{"group": err.Error()}, http.StatusBadRequest)
 		return
@@ -118,7 +118,8 @@ func CreateGroup(w http.ResponseWriter, r *http.Request) {
 func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	var (
 		groupID int
-		err     error
+
+		err error
 	)
 	if groupID, err = strconv.Atoi(router.Context(r).Param("id")); err != nil {
 		logs.Debug(err)

@@ -110,6 +110,13 @@ func serve(ctx *cli.Context) error {
 	app.Get("/users/register", controllers.Register)
 	app.Post("/users/register", controllers.Register)
 
+	app.Get("/groups", controllers.RetrieveGroupCollection)
+	app.Post("/groups", controllers.CreateGroup)
+
+	app.Get("/groups/:id", controllers.RetrieveGroup)
+	app.Delete("/groups/:id", controllers.DeleteGroup)
+	app.Patch("/groups/:id", controllers.UpdateGroup)
+
 	server, err := config.Server()
 	if err != nil {
 		logs.Critical(err)

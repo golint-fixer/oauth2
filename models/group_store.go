@@ -5,7 +5,7 @@ import "github.com/jinzhu/gorm"
 type GroupDS interface {
 	Save(*Group) error
 	Delete(*Group) error
-	First(*Group) error
+	First(*Group, uint) error
 	Find() ([]Group, error)
 }
 
@@ -35,8 +35,8 @@ func (s *GroupSQL) Delete(g *Group) error {
 	return s.DB.Error
 }
 
-func (s *GroupSQL) First(g *Group) error {
-	s.DB.Find(g)
+func (s *GroupSQL) First(g *Group, ID uint) error {
+	s.DB.Where("ID = ?", ID).Find(g)
 
 	return s.DB.Error
 }

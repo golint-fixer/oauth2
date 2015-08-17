@@ -37,11 +37,11 @@ func RetrieveGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		g          = models.Group{ID: uint(id)}
+		g          = models.Group{}
 		db         = getDB(r)
 		groupStore = models.GroupStore(db)
 	)
-	if err = groupStore.First(&g); err != nil {
+	if err = groupStore.First(&g, uint(id)); err != nil {
 		if err == sql.ErrNoRows {
 			Fail(w, r, nil, http.StatusNotFound)
 			return
@@ -70,7 +70,7 @@ func UpdateGroup(w http.ResponseWriter, r *http.Request) {
 		groupStore = models.GroupStore(db)
 		g          = &models.Group{ID: uint(groupID)}
 	)
-	if err = groupStore.First(g); err != nil {
+	if err = groupStore.First(g, g.ID); err != nil {
 		Fail(w, r, map[string]interface{}{"group": err.Error()}, http.StatusBadRequest)
 		return
 	}

@@ -4,7 +4,7 @@ import "github.com/asaskevich/govalidator"
 
 type User struct {
 	ID        int64   `json:"id" gorm"primary_key"`
-	Mail      *string `sql:"not null"`
+	Mail      *string `sql:"not null;unique"`
 	Password  *string `sql:"not null"`
 	Firstname *string `sql:"not null" json:"firstname"`
 	Surname   *string `sql:"not null" json:"surname"`

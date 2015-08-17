@@ -67,6 +67,18 @@ func checkUser(username string, password string, r *http.Request) (int, error) {
 	if err != nil || groupID == 0 {
 		return 0, err
 	}
+	var (
+		g          = models.Group{ID: 0}
+		db         = getDB(r)
+		groupStore = models.GroupStore(db)
+	)
+	err = groupStore.First(&g, uint(groupID))
+	if err != nil {
+		return 0, err
+	}
+	if g.ID == 0 {
+		return 0, errors.New("No such group")
+	}
 	return groupID, nil
 }
 

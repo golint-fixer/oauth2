@@ -54,10 +54,10 @@ func Auth(username string, password string, r *http.Request) (int, error) {
 		return 0, err
 	}
 	if u.ID == 0 {
-		return 0, errors.New("No such user")
+		return 0, errors.New("no such user")
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(password)); err != nil {
-		return 0, errors.New("Wrong password")
+		return 0, errors.New("wrong password")
 	}
 	return int(u.GroupID), nil
 }
@@ -77,7 +77,7 @@ func checkUser(username string, password string, r *http.Request) (int, error) {
 		return 0, err
 	}
 	if g.ID == 0 {
-		return 0, errors.New("No such group")
+		return 0, errors.New("no such group")
 	}
 	return groupID, nil
 }
@@ -115,7 +115,8 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	}
 	if resp.IsError && resp.InternalError != nil {
 		logs.Error(resp.InternalError.Error())
-		Fail(w, r, map[string]interface{}{"User": resp.InternalError.Error()}, http.StatusBadRequest)
+		Fail(w, r, map[string]interface{}{"user": resp.InternalError.Error()}, http.StatusBadRequest)
+		return
 	}
 	osin.OutputJSON(resp, w, r)
 }

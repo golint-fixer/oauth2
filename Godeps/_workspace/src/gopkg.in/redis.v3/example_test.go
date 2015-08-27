@@ -84,6 +84,21 @@ func ExampleClient() {
 	// key2 does not exists
 }
 
+func ExampleClient_Set() {
+	// Last argument is expiration. Zero means the key has no
+	// expiration time.
+	err := client.Set("key", "value", 0).Err()
+	if err != nil {
+		panic(err)
+	}
+
+	// key2 will expire in an hour.
+	err = client.Set("key2", "value", time.Hour).Err()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func ExampleClient_Incr() {
 	if err := client.Incr("counter").Err(); err != nil {
 		panic(err)
@@ -92,6 +107,34 @@ func ExampleClient_Incr() {
 	n, err := client.Get("counter").Int64()
 	fmt.Println(n, err)
 	// Output: 1 <nil>
+}
+
+func ExampleClient_Scan() {
+	client.FlushDb()
+	for i := 0; i < 33; i++ {
+		err := client.Set(fmt.Sprintf("key%d", i), "value", 0).Err()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var cursor int64
+	var n int
+	for {
+		var keys []string
+		var err error
+		cursor, keys, err = client.Scan(cursor, "", 10).Result()
+		if err != nil {
+			panic(err)
+		}
+		n += len(keys)
+		if cursor == 0 {
+			break
+		}
+	}
+
+	fmt.Printf("found %d keys\n", n)
+	// Output: found 33 keys
 }
 
 func ExampleClient_Pipelined() {

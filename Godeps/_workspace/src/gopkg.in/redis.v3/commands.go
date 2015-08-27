@@ -526,6 +526,9 @@ func (c *commandable) MSetNX(pairs ...string) *BoolCmd {
 	return cmd
 }
 
+// Redis `SET key value [expiration]` command.
+//
+// Zero expiration means the key has no expiration time.
 func (c *commandable) Set(key string, value interface{}, expiration time.Duration) *StatusCmd {
 	args := make([]interface{}, 3, 5)
 	args[0] = "SET"
@@ -554,6 +557,9 @@ func (c *commandable) SetBit(key string, offset int64, value int) *IntCmd {
 	return cmd
 }
 
+// Redis `SET key value [expiration] NX` command.
+//
+// Zero expiration means the key has no expiration time.
 func (c *commandable) SetNX(key string, value interface{}, expiration time.Duration) *BoolCmd {
 	var cmd *BoolCmd
 	if expiration == 0 {
@@ -570,6 +576,9 @@ func (c *commandable) SetNX(key string, value interface{}, expiration time.Durat
 	return cmd
 }
 
+// Redis `SET key value [expiration] XX` command.
+//
+// Zero expiration means the key has no expiration time.
 func (c *Client) SetXX(key string, value interface{}, expiration time.Duration) *BoolCmd {
 	var cmd *BoolCmd
 	if usePrecise(expiration) {
@@ -935,8 +944,16 @@ func (c *commandable) SPop(key string) *StringCmd {
 	return cmd
 }
 
+// Redis `SRANDMEMBER key` command.
 func (c *commandable) SRandMember(key string) *StringCmd {
 	cmd := NewStringCmd("SRANDMEMBER", key)
+	c.Process(cmd)
+	return cmd
+}
+
+// Redis `SRANDMEMBER key count` command.
+func (c *commandable) SRandMemberN(key string, count int64) *StringSliceCmd {
+	cmd := NewStringSliceCmd("SRANDMEMBER", key, formatInt(count))
 	c.Process(cmd)
 	return cmd
 }
@@ -978,13 +995,16 @@ func (c *commandable) SUnionStore(destination string, keys ...string) *IntCmd {
 
 //------------------------------------------------------------------------------
 
+// Sorted set member.
 type Z struct {
 	Score  float64
-	Member string
+	Member interface{}
 }
 
+// Sorted set store operation.
 type ZStore struct {
-	Weights   []int64
+	Weights []int64
+	// Can be SUM, MIN or MAX.
 	Aggregate string
 }
 
@@ -1077,13 +1097,14 @@ func (c *commandable) ZRangeWithScores(key string, start, stop int64) *ZSliceCmd
 	return cmd
 }
 
+// TODO: Rename to something more generic in v4
 type ZRangeByScore struct {
 	Min, Max      string
 	Offset, Count int64
 }
 
-func (c *commandable) zRangeByScore(key string, opt ZRangeByScore, withScores bool) *StringSliceCmd {
-	args := []interface{}{"ZRANGEBYSCORE", key, opt.Min, opt.Max}
+func (c *commandable) zRangeBy(zcmd, key string, opt ZRangeByScore, withScores bool) *StringSliceCmd {
+	args := []interface{}{zcmd, key, opt.Min, opt.Max}
 	if withScores {
 		args = append(args, "WITHSCORES")
 	}
@@ -1101,7 +1122,11 @@ func (c *commandable) zRangeByScore(key string, opt ZRangeByScore, withScores bo
 }
 
 func (c *commandable) ZRangeByScore(key string, opt ZRangeByScore) *StringSliceCmd {
-	return c.zRangeByScore(key, opt, false)
+	return c.zRangeBy("ZRANGEBYSCORE", key, opt, false)
+}
+
+func (c *commandable) ZRangeByLex(key string, opt ZRangeByScore) *StringSliceCmd {
+	return c.zRangeBy("ZRANGEBYLEX", key, opt, false)
 }
 
 func (c *commandable) ZRangeByScoreWithScores(key string, opt ZRangeByScore) *ZSliceCmd {
@@ -1166,8 +1191,8 @@ func (c *commandable) ZRevRangeWithScores(key string, start, stop int64) *ZSlice
 	return cmd
 }
 
-func (c *commandable) ZRevRangeByScore(key string, opt ZRangeByScore) *StringSliceCmd {
-	args := []interface{}{"ZREVRANGEBYSCORE", key, opt.Max, opt.Min}
+func (c *commandable) zRevRangeBy(zcmd, key string, opt ZRangeByScore) *StringSliceCmd {
+	args := []interface{}{zcmd, key, opt.Max, opt.Min}
 	if opt.Offset != 0 || opt.Count != 0 {
 		args = append(
 			args,
@@ -1179,6 +1204,14 @@ func (c *commandable) ZRevRangeByScore(key string, opt ZRangeByScore) *StringSli
 	cmd := NewStringSliceCmd(args...)
 	c.Process(cmd)
 	return cmd
+}
+
+func (c *commandable) ZRevRangeByScore(key string, opt ZRangeByScore) *StringSliceCmd {
+	return c.zRevRangeBy("ZREVRANGEBYSCORE", key, opt)
+}
+
+func (c commandable) ZRevRangeByLex(key string, opt ZRangeByScore) *StringSliceCmd {
+	return c.zRevRangeBy("ZREVRANGEBYLEX", key, opt)
 }
 
 func (c *commandable) ZRevRangeByScoreWithScores(key string, opt ZRangeByScore) *ZSliceCmd {

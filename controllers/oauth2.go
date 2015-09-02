@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -43,7 +43,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
-func Auth(username string, password string, r *http.Request) (int, error) {
+func getUserInfos(username string, password string, r *http.Request) (string, error) {
 	var (
 		u         = models.User{Mail: &username, Password: sPtr(password)}
 		db        = getDB(r)
@@ -51,35 +51,18 @@ func Auth(username string, password string, r *http.Request) (int, error) {
 	)
 	if err := userStore.First(&u); err != nil {
 		logs.Error(err)
-		return 0, err
+		return "0", err
 	}
 	if u.ID == 0 {
-		return 0, errors.New("no such user")
+		return "0", errors.New("no such user")
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(password)); err != nil {
-		return 0, errors.New("wrong password")
+		return "0", errors.New("wrong password")
 	}
-	return int(u.GroupID), nil
-}
 
-func checkUser(username string, password string, r *http.Request) (int, error) {
-	groupID, err := Auth(username, password, r)
-	if err != nil || groupID == 0 {
-		return 0, err
-	}
-	var (
-		g          = models.Group{ID: 0}
-		db         = getDB(r)
-		groupStore = models.GroupStore(db)
-	)
-	err = groupStore.First(&g, uint(groupID))
-	if err != nil {
-		return 0, err
-	}
-	if g.ID == 0 {
-		return 0, errors.New("no such group")
-	}
-	return groupID, nil
+	userInfos := fmt.Sprintf("%d:%d", u.ID, u.GroupID)
+
+	return userInfos, nil
 }
 
 // Token endpoint
@@ -99,16 +82,16 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		case osin.PASSWORD:
 			if ar.Username == "test" && ar.Password == "test" {
 				ar.Authorized = true
-				ar.UserData = "1"
+				ar.UserData = "1:1"
 			} else {
-				groupID, err := checkUser(ar.Username, ar.Password, r)
+				userInfos, err := getUserInfos(ar.Username, ar.Password, r)
 				if err != nil {
 					resp.IsError = true
 					resp.InternalError = err
 				} else {
 					ar.Authorized = true
 				}
-				ar.UserData = strconv.Itoa(groupID)
+				ar.UserData = userInfos
 			}
 		}
 		server.FinishAccessRequest(resp, r, ar)

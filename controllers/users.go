@@ -1,12 +1,17 @@
 package controllers
 
 import (
+	"database/sql"
 	"net/http"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
+	. "github.com/quorumsco/jsonapi"
 	"github.com/quorumsco/logs"
-	"github.com/quorumsco/users/models"
+	"github.com/quorumsco/oauth2/models"
+	"github.com/quorumsco/oauth2/views"
+	"github.com/quorumsco/router"
 )
 
 func sPtr(s string) *string {
@@ -51,4 +56,30 @@ func Register(w http.ResponseWriter, req *http.Request) {
 	if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
 		logs.Error(err)
 	}
+}
+
+func RetrieveUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(router.Context(r).Param("id"))
+	if err != nil {
+		logs.Debug(err)
+		Fail(w, r, map[string]interface{}{"id": "not integer"}, http.StatusBadRequest)
+		return
+	}
+
+	var (
+		u         = models.User{ID: int64(id)}
+		db        = getDB(r)
+		userStore = models.UserStore(db)
+	)
+	if err = userStore.First(&u); err != nil {
+		if err == sql.ErrNoRows {
+			Fail(w, r, nil, http.StatusNotFound)
+			return
+		}
+		logs.Error(err)
+		Error(w, r, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	Success(w, r, views.User{User: &u}, http.StatusOK)
 }

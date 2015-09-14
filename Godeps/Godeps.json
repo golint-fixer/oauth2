@@ -1,13 +1,13 @@
 {
 	"ImportPath": "github.com/quorumsco/oauth2",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/RangelReale/osin",
-			"Rev": "c07b3bd1ee57089f63e6325c0ea035ceed2e905c"
+			"Rev": "9a0da5d595de807fd9861a9ca48336741bd18dcb"
 		},
 		{
 			"ImportPath": "github.com/asaskevich/govalidator",
@@ -95,10 +95,6 @@
 		{
 			"ImportPath": "github.com/quorumsco/settings",
 			"Rev": "db5a6ed05d6a5ee555018e6b62b6f08683082946"
-		},
-		{
-			"ImportPath": "github.com/quorumsco/users/models",
-			"Rev": "2b5c7a9e1194232e73ed2bde6ae548e233e01e04"
 		},
 		{
 			"ImportPath": "github.com/shiena/ansicolor",

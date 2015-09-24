@@ -150,6 +150,7 @@ func (s *RedisStorage) SaveAccess(data *osin.AccessData) error {
 		"user_data", data.UserData.(string),
 	).Result()
 	s.client.Expire(data.AccessToken, time.Duration(data.ExpiresIn)*time.Second).Result()
+	// s.client.Expire(data.AccessToken, 10*time.Second).Result()
 
 	if data.RefreshToken != "" {
 		s.client.Set(data.RefreshToken, data.AccessToken, time.Duration(data.ExpiresIn)*time.Second).Result()

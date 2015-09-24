@@ -143,7 +143,6 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		if resp.IsError {
 			return
 		}
-
 		// output data
 		resp.Output["client_id"] = ir.AccessData.Client.GetId()
 		// resp.Output["access_token"] = ir.AccessData.AccessToken
@@ -159,5 +158,6 @@ func Info(w http.ResponseWriter, r *http.Request) {
 			resp.Output["owner"] = ir.AccessData.UserData.(string)
 		}
 	}
+	//Right here retry with the session.
 	osin.OutputJSON(resp, w, r)
 }

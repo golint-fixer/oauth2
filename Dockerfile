@@ -1,5 +1,5 @@
 FROM golang
-MAINTAINER Douézan-Grard Guillaume - Quorums
+MAINTAINER Wilmot Guillaume - Quorums
 
 RUN go get github.com/tools/godep
 

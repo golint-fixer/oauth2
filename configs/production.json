@@ -7,8 +7,12 @@
     "components": {
     	"server": {
             "host": "0.0.0.0",
-            "port": 8080
+            "port": 8081
     	},
+       "redis": {
+            "host": "api.quorumapps.com",
+            "port": 6379
+        }
         "postgres": {
             "db": "postgres",
             "host": "postgres",

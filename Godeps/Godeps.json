@@ -66,7 +66,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/application",
-			"Rev": "c03629cc2d26c78fd4367a3b06ed48d1a42c5d7f"
+			"Rev": "f979980f4d7dcc88ce58db7afeb80935fd93e4e6"
 		},
 		{
 			"ImportPath": "github.com/quorumsco/cmd",
@@ -74,15 +74,15 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/databases",
-			"Rev": "4fc50e53077432246684f9b766a6f3f6a81b8962"
+			"Rev": "0a5664c20409e4428eeb1aaccf1341794552a084"
 		},
 		{
 			"ImportPath": "github.com/quorumsco/gojimux",
-			"Rev": "2252460f8a38a594ee0e0e136ebe74576289da94"
+			"Rev": "f9b92234881c6993fce09017f9445b2badd34f2e"
 		},
 		{
 			"ImportPath": "github.com/quorumsco/jsonapi",
-			"Rev": "b65b96784d485278ad5817a1fbaa98e7b23225d0"
+			"Rev": "5368944a4a0f906171dc6c76a970e7a2aac55740"
 		},
 		{
 			"ImportPath": "github.com/quorumsco/logs",
@@ -94,7 +94,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/settings",
-			"Rev": "db5a6ed05d6a5ee555018e6b62b6f08683082946"
+			"Rev": "a6756a4f86f51feae11a0004faeb54bbeb683091"
 		},
 		{
 			"ImportPath": "github.com/shiena/ansicolor",

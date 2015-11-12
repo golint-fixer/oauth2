@@ -1,3 +1,4 @@
+// Connects to databases and return the client
 package databases
 
 import (
@@ -13,10 +14,13 @@ import (
 )
 
 var (
+	//TIMEOUT time between each try
 	TIMEOUT = 5 * time.Second
-	RETRY   = 3
+	//RETRY number of tries
+	RETRY = 3
 )
 
+// Return a sqlx client
 func InitSQLX(dialect, args string) (*sqlx.DB, error) {
 	var db *sqlx.DB
 	var err error
@@ -44,6 +48,7 @@ retry:
 	return db, nil
 }
 
+// Return a gorm client
 func InitGORM(dialect, args string) (*gorm.DB, error) {
 	var db gorm.DB
 	var err error

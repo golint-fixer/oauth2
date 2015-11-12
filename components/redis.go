@@ -1,3 +1,4 @@
+// Redis related structures and methods
 package components
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/quorumsco/logs"
 )
 
+// Represent an authentication session in redis
 type RedisStorage struct {
 	clients   map[string]osin.Client
 	authorize map[string]*osin.AuthorizeData
@@ -20,6 +22,7 @@ type RedisStorage struct {
 	client *redis.Client
 }
 
+// Creates a new redis storeage session
 func NewRedisStorage(client *redis.Client) *RedisStorage {
 	r := &RedisStorage{
 		clients:   make(map[string]osin.Client),
@@ -45,6 +48,7 @@ func (s *RedisStorage) Clone() osin.Storage {
 func (s *RedisStorage) Close() {
 }
 
+// Returns a client from it's id
 func (s *RedisStorage) GetClient(id string) (osin.Client, error) {
 	logs.Debug("GetClientDatabase: %s", id)
 
@@ -58,6 +62,7 @@ func (s *RedisStorage) GetClient(id string) (osin.Client, error) {
 	return nil, errors.New("Client not found")
 }
 
+// Calls GetClient and returns the result or return a new client
 func (s *RedisStorage) getClient(id string) (osin.Client, error) {
 	logs.Debug("GetClientCache: %s", id)
 
@@ -75,6 +80,7 @@ func (s *RedisStorage) getClient(id string) (osin.Client, error) {
 	return client, nil
 }
 
+// Creates a new client
 func (s *RedisStorage) SetClient(id string, client osin.Client) error {
 	logs.Debug("SetClient: %s", id)
 
@@ -82,6 +88,7 @@ func (s *RedisStorage) SetClient(id string, client osin.Client) error {
 	return nil
 }
 
+// Saves a new client
 func (s *RedisStorage) SaveAuthorize(data *osin.AuthorizeData) error {
 	logs.Debug("SaveAuthorize: %s", data.Code)
 
@@ -99,6 +106,7 @@ func (s *RedisStorage) SaveAuthorize(data *osin.AuthorizeData) error {
 	return nil
 }
 
+// Return a client
 func (s *RedisStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 	logs.Debug("LoadAuthorize: %s", code)
 
@@ -125,6 +133,7 @@ func (s *RedisStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 	return d, nil
 }
 
+// Deletes a client
 func (s *RedisStorage) RemoveAuthorize(code string) error {
 	logs.Debug("RemoveAuthorize: %s", code)
 
@@ -132,6 +141,7 @@ func (s *RedisStorage) RemoveAuthorize(code string) error {
 	return nil
 }
 
+// Saves a new storage session
 func (s *RedisStorage) SaveAccess(data *osin.AccessData) error {
 	logs.Debug("SaveAccess: %s", data.AccessToken)
 
@@ -159,6 +169,7 @@ func (s *RedisStorage) SaveAccess(data *osin.AccessData) error {
 	return nil
 }
 
+// Returns a storage session
 func (s *RedisStorage) LoadAccess(code string) (*osin.AccessData, error) {
 	logs.Debug("LoadAccess: %s", code)
 
@@ -186,6 +197,7 @@ func (s *RedisStorage) LoadAccess(code string) (*osin.AccessData, error) {
 	return d, nil
 }
 
+// Delete a storage session
 func (s *RedisStorage) RemoveAccess(code string) error {
 	logs.Debug("RemoveAccess: %s", code)
 

@@ -1,3 +1,4 @@
+// Bundle of functions managing the CRUD
 package controllers
 
 import (
@@ -14,6 +15,7 @@ import (
 	"github.com/quorumsco/router"
 )
 
+// Return a string's pointer
 func sPtr(s string) *string {
 	if s == "" {
 		return nil
@@ -22,6 +24,7 @@ func sPtr(s string) *string {
 	}
 }
 
+// Creates a new user
 func Register(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "POST" {
 		req.ParseForm()
@@ -58,6 +61,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// Returns a user
 func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(router.Context(r).Param("id"))
 	if err != nil {

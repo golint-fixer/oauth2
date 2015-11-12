@@ -1,3 +1,4 @@
+// Views for JSON responses
 package views
 
 import "text/template"

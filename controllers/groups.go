@@ -1,3 +1,4 @@
+// Bundle of functions managing the CRUD
 package controllers
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/quorumsco/router"
 )
 
+// RetrieveGroupCollection calls the GroupSQL Find method and returns the results
 func RetrieveGroupCollection(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
@@ -28,6 +30,7 @@ func RetrieveGroupCollection(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.Groups{Groups: groups}, http.StatusOK)
 }
 
+// RetrieveGroup calls the GroupSQL First method and returns the results
 func RetrieveGroup(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(router.Context(r).Param("id"))
 	if err != nil {
@@ -54,6 +57,7 @@ func RetrieveGroup(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.Group{Group: &g}, http.StatusOK)
 }
 
+// UpdateGroup calls the GroupSQL Save method and returns the results
 func UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	var (
 		groupID int
@@ -90,6 +94,7 @@ func UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.Group{Group: g}, http.StatusOK)
 }
 
+// CreateGroup calls the GroupSQL Save method and returns the results
 func CreateGroup(w http.ResponseWriter, r *http.Request) {
 	var (
 		g = new(models.Group)
@@ -115,6 +120,7 @@ func CreateGroup(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.Group{Group: g}, http.StatusCreated)
 }
 
+// DeleteGroup calls the GroupSQL Delete method and returns the results
 func DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	var (
 		groupID int

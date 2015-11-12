@@ -1,3 +1,4 @@
+// Authentification management structure
 package main
 
 import (
@@ -104,8 +105,6 @@ func serve(ctx *cli.Context) error {
 	app.Get("/oauth2/authorize", controllers.Authorize)
 	app.Post("/oauth2/token", controllers.Token)
 	app.Get("/oauth2/info", controllers.Info)
-
-	app.Get("/test", controllers.Test)
 
 	app.Post("/users/register", controllers.Register)
 	app.Get("/users/:id", controllers.RetrieveUser)

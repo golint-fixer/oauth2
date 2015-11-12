@@ -1,3 +1,4 @@
+// Definition of the structures and SQL interaction functions
 package models
 
 import (

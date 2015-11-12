@@ -1,7 +1,9 @@
+// Definition of the structures and SQL interaction functions
 package models
 
 import "github.com/asaskevich/govalidator"
 
+// User represent a user in the database
 type User struct {
 	ID        int64   `json:"id"`
 	Mail      *string `sql:"not null;unique"`
@@ -11,6 +13,7 @@ type User struct {
 	GroupID   uint    `json:"group_id"`
 }
 
+// Validate is used to check if the user infos are correct before inserting it into the database
 func (u *User) Validate() map[string]string {
 	var errs = make(map[string]string)
 

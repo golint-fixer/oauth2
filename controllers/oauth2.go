@@ -1,3 +1,4 @@
+// Bundle of functions managing the CRUD
 package controllers
 
 import (
@@ -19,6 +20,7 @@ import (
 	"github.com/quorumsco/router"
 )
 
+// OAuthComponents returns the OAuth client defined in the main
 func OAuthComponent(r *http.Request) *osin.Server {
 	return router.Context(r).Env["Application"].(*application.Application).Components["OAuth"].(*osin.Server)
 }
@@ -43,6 +45,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
+// Returns the user infos from the database using the credentials
 func getUserInfos(username string, password string, r *http.Request) (string, error) {
 	var (
 		u         = models.User{Mail: &username, Password: sPtr(password)}
@@ -80,19 +83,19 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		case osin.REFRESH_TOKEN:
 			ar.Authorized = true
 		case osin.PASSWORD:
-			if ar.Username == "test" && ar.Password == "test" {
-				ar.Authorized = true
-				ar.UserData = "1:1"
+			// if ar.Username == "test" && ar.Password == "test" {
+			// 	ar.Authorized = true
+			// 	ar.UserData = "1:1"
+			// } else {
+			userInfos, err := getUserInfos(ar.Username, ar.Password, r)
+			if err != nil {
+				resp.IsError = true
+				resp.InternalError = err
 			} else {
-				userInfos, err := getUserInfos(ar.Username, ar.Password, r)
-				if err != nil {
-					resp.IsError = true
-					resp.InternalError = err
-				} else {
-					ar.Authorized = true
-				}
-				ar.UserData = userInfos
+				ar.Authorized = true
 			}
+			ar.UserData = userInfos
+			// }
 		}
 		server.FinishAccessRequest(resp, r, ar)
 	}
@@ -104,6 +107,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 	osin.OutputJSON(resp, w, r)
 }
 
+// Extracts the token from the header and returns it
 func parseBearerToken(auth string) (string, error) {
 	if !strings.HasPrefix(auth, "Bearer ") {
 		return "", errors.New("Not a bearer authorization header")
@@ -111,26 +115,7 @@ func parseBearerToken(auth string) (string, error) {
 	return strings.TrimPrefix(auth, "Bearer "), nil
 }
 
-func Test(w http.ResponseWriter, r *http.Request) {
-	var (
-		token string
-		err   error
-	)
-
-	if token, err = parseBearerToken(r.Header.Get("Authorization")); err != nil {
-		return
-	}
-
-	var (
-		server = OAuthComponent(r)
-		access *osin.AccessData
-	)
-	if access, err = server.Storage.LoadAccess(token); err != nil {
-		return
-	}
-	io.WriteString(w, "Hello "+access.Client.GetId())
-}
-
+// Info return the token's information via http
 func Info(w http.ResponseWriter, r *http.Request) {
 	var (
 		server = OAuthComponent(r)

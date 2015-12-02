@@ -82,10 +82,6 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		case osin.REFRESH_TOKEN:
 			ar.Authorized = true
 		case osin.PASSWORD:
-			// if ar.Username == "test" && ar.Password == "test" {
-			// 	ar.Authorized = true
-			// 	ar.UserData = "1:1"
-			// } else {
 			userInfos, err := getUserInfos(ar.Username, ar.Password, r)
 			if err != nil {
 				resp.IsError = true
@@ -94,7 +90,6 @@ func Token(w http.ResponseWriter, r *http.Request) {
 				ar.Authorized = true
 			}
 			ar.UserData = userInfos
-			// }
 		}
 		server.FinishAccessRequest(resp, r, ar)
 	}

@@ -87,6 +87,8 @@ func serve(ctx *cli.Context) error {
 	cfg.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN}
 	cfg.AllowedAccessTypes = osin.AllowedAccessType{osin.AUTHORIZATION_CODE,
 		osin.REFRESH_TOKEN, osin.PASSWORD}
+	cfg.AccessExpiration = 3600 * 10
+	// cfg.AccessExpiration = 30
 
 	oauthServer := osin.NewServer(cfg, components.NewRedisStorage(client))
 	app.Components["OAuth"] = oauthServer

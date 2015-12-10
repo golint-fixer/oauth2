@@ -94,7 +94,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/settings",
-			"Rev": "a6756a4f86f51feae11a0004faeb54bbeb683091"
+			"Rev": "752bcc74d3e666256fffb452e2241866d84cba1b"
 		},
 		{
 			"ImportPath": "github.com/shiena/ansicolor",

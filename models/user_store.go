@@ -24,40 +24,42 @@ func UserStore(db *gorm.DB) UserDS {
 // Save inserts a new user into the database
 func (s *UserSQL) Save(u *User) error {
 	if u.ID == 0 {
-		s.DB.Create(u)
+		err := s.DB.Create(u).Error
 
-		return s.DB.Error
+		return err
 	}
 
-	s.DB.Save(u)
+	err := s.DB.Save(u).Error
 
-	return s.DB.Error
+	return err
 }
 
 // Delete removes a user from the database
 func (s *UserSQL) Delete(u *User) error {
-	s.DB.Delete(u)
+	err := s.DB.Delete(u).Error
 
-	return s.DB.Error
+	return err
 }
 
 // First return a user from the database using his ID
 func (s *UserSQL) First(u *User) error {
+	var err error
+
 	if u.Mail != nil && u.Password != nil {
-		s.DB.Where("mail = ?", u.Mail).Find(u)
+		err = s.DB.Where("mail = ?", u.Mail).Find(u).Error
 	} else {
-		s.DB.Find(u)
+		err = s.DB.Find(u).Error
 	}
 
-	return s.DB.Error
+	return err
 }
 
 // Find returns every user with a given groupID from the database
 func (s *UserSQL) Find() ([]User, error) {
 	var users []User
-	s.DB.Find(&users)
-	if s.DB.Error != nil {
+	err := s.DB.Find(&users).Error
+	if err != nil {
 		return users, nil
 	}
-	return users, s.DB.Error
+	return users, err
 }

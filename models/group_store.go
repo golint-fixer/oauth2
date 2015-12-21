@@ -24,36 +24,33 @@ func GroupStore(db *gorm.DB) GroupDS {
 // Save inserts a new group into the database
 func (s *GroupSQL) Save(g *Group) error {
 	if g.ID == 0 {
-		s.DB.Create(g)
+		err := s.DB.Create(g).Error
 
-		return s.DB.Error
+		return err
 	}
 
-	s.DB.Save(g)
+	err := s.DB.Save(g).Error
 
-	return s.DB.Error
+	return err
 }
 
 // Delete removes a group from the database
 func (s *GroupSQL) Delete(g *Group) error {
-	s.DB.Delete(g)
+	err := s.DB.Delete(g).Error
 
-	return s.DB.Error
+	return err
 }
 
 // First returns a group from the database using it's ID
 func (s *GroupSQL) First(g *Group, ID uint) error {
-	s.DB.Where("ID = ?", ID).Find(g)
+	err := s.DB.Where("ID = ?", ID).Find(g).Error
 
-	return s.DB.Error
+	return err
 }
 
 // First returns every group from the database
 func (s *GroupSQL) Find() ([]Group, error) {
 	var groups []Group
-	s.DB.Find(&groups)
-	if s.DB.Error != nil {
-		return groups, nil
-	}
-	return groups, s.DB.Error
+	err := s.DB.Find(&groups).Error
+	return groups, err
 }

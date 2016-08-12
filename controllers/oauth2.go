@@ -61,6 +61,9 @@ func getUserInfos(username string, password string, r *http.Request) (string, er
 	if err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(password)); err != nil {
 		return "0", errors.New("wrong password")
 	}
+	if u.GroupID == 0 {
+		return "0", errors.New("User not activate")
+	}
 
 	userInfos := fmt.Sprintf("%d:%d", u.ID, u.GroupID)
 

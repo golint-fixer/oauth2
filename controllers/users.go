@@ -43,7 +43,9 @@ func Register(w http.ResponseWriter, req *http.Request) {
 
 		errs := u.Validate()
 		if len(errs) > 0 {
-			logs.Debug(errs)
+			logs.Error(errs)
+			Error(w, req, "Vous avez une ou des erreur(s) dans le formulaire d'inscription. vérifiez votre saisie (formatage du mail par exemple)", http.StatusBadRequest)
+			//Fail(w, req, "", http.StatusInternalServerError)
 			return
 		}
 
@@ -51,6 +53,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 		err = store.Save(u)
 		if err != nil {
 			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}

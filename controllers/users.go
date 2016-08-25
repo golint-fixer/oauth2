@@ -64,6 +64,44 @@ func Register(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// Update a user password and set the group_id to "0"
+func Update(w http.ResponseWriter, req *http.Request) {
+	if req.Method == "POST" {
+		req.ParseForm()
+
+		passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.FormValue("password")), bcrypt.DefaultCost)
+		if err != nil {
+			panic(err)
+		}
+
+		u := &models.User{
+			Mail:     sPtr(req.FormValue("mail")),
+			Password: sPtr(string(passwordHash)),
+		}
+
+		errs := u.Validate()
+		if len(errs) > 0 {
+			logs.Error(errs)
+			Error(w, req, "Vous avez une ou des erreur(s) dans le formulaire d'inscription. vérifiez votre saisie (formatage du mail par exemple)", http.StatusBadRequest)
+			//Fail(w, req, "", http.StatusInternalServerError)
+			return
+		}
+
+		var store = models.UserStore(getDB(req))
+		err = store.Update(u)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	templates := getTemplates(req)
+	if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
+		logs.Error(err)
+	}
+}
+
 // Returns a user
 func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(router.Context(r).Param("id"))

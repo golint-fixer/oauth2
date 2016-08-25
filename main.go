@@ -110,6 +110,7 @@ func serve(ctx *cli.Context) error {
 
 	app.Post("/users/register", controllers.Register)
 	app.Get("/users/:id", controllers.RetrieveUser)
+	app.Post("/users/update", controllers.Update)
 
 	app.Get("/groups", controllers.RetrieveGroupCollection)
 	app.Post("/groups", controllers.CreateGroup)

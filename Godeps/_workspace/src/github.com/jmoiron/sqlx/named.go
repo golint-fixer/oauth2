@@ -79,7 +79,7 @@ func (n *NamedStmt) Queryx(arg interface{}) (*Rows, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Rows{Rows: r, Mapper: n.Stmt.Mapper}, err
+	return &Rows{Rows: r, Mapper: n.Stmt.Mapper, unsafe: isUnsafe(n)}, err
 }
 
 // QueryRowx this NamedStmt.  Because of limitations with QueryRow, this is
@@ -90,7 +90,7 @@ func (n *NamedStmt) QueryRowx(arg interface{}) *Row {
 
 // Select using this NamedStmt
 func (n *NamedStmt) Select(dest interface{}, arg interface{}) error {
-	rows, err := n.Query(arg)
+	rows, err := n.Queryx(arg)
 	if err != nil {
 		return err
 	}
@@ -103,6 +103,13 @@ func (n *NamedStmt) Select(dest interface{}, arg interface{}) error {
 func (n *NamedStmt) Get(dest interface{}, arg interface{}) error {
 	r := n.QueryRowx(arg)
 	return r.scanAny(dest, false)
+}
+
+// Unsafe creates an unsafe version of the NamedStmt
+func (n *NamedStmt) Unsafe() *NamedStmt {
+	r := &NamedStmt{Params: n.Params, Stmt: n.Stmt, QueryString: n.QueryString}
+	r.Stmt.unsafe = true
+	return r
 }
 
 // A union interface of preparer and binder, required to be able to prepare
@@ -243,7 +250,7 @@ func compileNamedQuery(qs []byte, bindType int) (query string, names []string, e
 			inName = true
 			name = []byte{}
 			// if we're in a name, and this is an allowed character, continue
-		} else if inName && (unicode.IsOneOf(allowedBindRunes, rune(b)) || b == '_') && i != last {
+		} else if inName && (unicode.IsOneOf(allowedBindRunes, rune(b)) || b == '_' || b == '.') && i != last {
 			// append the byte to the name if we are in a name and not on the last byte
 			name = append(name, b)
 			// if we're in a name and it's not an allowed character, the name is done

@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// ClusterClient is a Redis Cluster client representing a pool of zero
+// or more underlying connections. It's safe for concurrent use by
+// multiple goroutines.
 type ClusterClient struct {
 	commandable
 
@@ -26,7 +29,7 @@ type ClusterClient struct {
 	reloading uint32
 }
 
-// NewClusterClient returns a new Redis Cluster client as described in
+// NewClusterClient returns a Redis Cluster client as described in
 // http://redis.io/topics/cluster-spec.
 func NewClusterClient(opt *ClusterOptions) *ClusterClient {
 	client := &ClusterClient{
@@ -41,10 +44,21 @@ func NewClusterClient(opt *ClusterOptions) *ClusterClient {
 	return client
 }
 
+// Watch creates new transaction and marks the keys to be watched
+// for conditional execution of a transaction.
+func (c *ClusterClient) Watch(keys ...string) (*Multi, error) {
+	addr := c.slotMasterAddr(hashSlot(keys[0]))
+	client, err := c.getClient(addr)
+	if err != nil {
+		return nil, err
+	}
+	return client.Watch(keys...)
+}
+
 // Close closes the cluster client, releasing any open resources.
 //
-// It is rare to Close a Client, as the Client is meant to be
-// long-lived and shared between many goroutines.
+// It is rare to Close a ClusterClient, as the ClusterClient is meant
+// to be long-lived and shared between many goroutines.
 func (c *ClusterClient) Close() error {
 	defer c.clientsMx.Unlock()
 	c.clientsMx.Lock()
@@ -143,6 +157,7 @@ func (c *ClusterClient) process(cmd Cmder) {
 			pipe.Process(NewCmd("ASKING"))
 			pipe.Process(cmd)
 			_, _ = pipe.Exec()
+			pipe.Close()
 			ask = false
 		} else {
 			client.Process(cmd)

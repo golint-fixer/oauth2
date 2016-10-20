@@ -52,7 +52,11 @@ func IsURL(str string) bool {
 	if strings.HasPrefix(u.Host, ".") {
 		return false
 	}
+	if u.Host == "" && (u.Path != "" && !strings.Contains(u.Path, ".")) {
+		return false
+	}
 	return rxURL.MatchString(str)
+
 }
 
 // IsRequestURL check if the string rawurl, assuming
@@ -454,13 +458,13 @@ func IsIP(str string) bool {
 // IsIPv4 check if the string is an IP version 4.
 func IsIPv4(str string) bool {
 	ip := net.ParseIP(str)
-	return ip != nil && ip.To4() != nil
+	return ip != nil && strings.Contains(str, ".")
 }
 
 // IsIPv6 check if the string is an IP version 6.
 func IsIPv6(str string) bool {
 	ip := net.ParseIP(str)
-	return ip != nil && ip.To4() == nil
+	return ip != nil && strings.Contains(str, ":")
 }
 
 // IsMAC check if a string is valid MAC address.
@@ -504,7 +508,7 @@ func ValidateStruct(s interface{}) (bool, error) {
 	}
 	// we only accept structs
 	if val.Kind() != reflect.Struct {
-		return false, fmt.Errorf("function only accepts structs; got %T", val)
+		return false, fmt.Errorf("function only accepts structs; got %s", val.Kind())
 	}
 	var errs Errors
 	for i := 0; i < val.NumField(); i++ {
@@ -570,6 +574,15 @@ func ByteLength(str string, params ...string) bool {
 	return false
 }
 
+// StringMatches checks if a string matches a given pattern.
+func StringMatches(s string, params ...string) bool {
+	if len(params) == 1 {
+		pattern := params[0]
+		return Matches(s, pattern)
+	}
+	return false
+}
+
 // StringLength check string's length (including multi byte strings)
 func StringLength(str string, params ...string) bool {
 
@@ -628,6 +641,20 @@ func typeCheck(v reflect.Value, t reflect.StructField) (bool, error) {
 	}
 
 	options := parseTag(tag)
+	for i := range options {
+		tagOpt := options[i]
+		if ok := isValidTag(tagOpt); !ok {
+			continue
+		}
+		if validatefunc, ok := CustomTypeTagMap[tagOpt]; ok {
+			options = append(options[:i], options[i+1:]...) // we found our custom validator, so remove it from the options
+			if result := validatefunc(v.Interface()); !result {
+				return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", fmt.Sprint(v), tagOpt)}
+			}
+			return true, nil
+		}
+	}
+
 	if isEmptyValue(v) {
 		// an empty value is not validated, check only required
 		return checkRequired(v, t, options)
@@ -649,7 +676,7 @@ func typeCheck(v reflect.Value, t reflect.StructField) (bool, error) {
 				negate = true
 			}
 			if ok := isValidTag(tagOpt); !ok {
-				err := fmt.Errorf("Unkown Validator %s", tagOpt)
+				err := fmt.Errorf("Unknown Validator %s", tagOpt)
 				return false, Error{t.Name, err}
 			}
 
@@ -672,7 +699,7 @@ func typeCheck(v reflect.Value, t reflect.StructField) (bool, error) {
 							}
 						default:
 							//Not Yet Supported Types (Fail here!)
-							err := fmt.Errorf("Validator %s doesn't supported Kind %s", tagOpt, v.Kind())
+							err := fmt.Errorf("Validator %s doesn't support kind %s", tagOpt, v.Kind())
 							return false, Error{t.Name, err}
 						}
 					}
@@ -694,7 +721,7 @@ func typeCheck(v reflect.Value, t reflect.StructField) (bool, error) {
 					}
 				default:
 					//Not Yet Supported Types (Fail here!)
-					err := fmt.Errorf("Validator %s doesn't supported Kind %s", tagOpt, v.Kind())
+					err := fmt.Errorf("Validator %s doesn't support kind %s for value %v", tagOpt, v.Kind(), v)
 					return false, Error{t.Name, err}
 				}
 			}
@@ -812,15 +839,16 @@ func ErrorsByField(e error) map[string]string {
 		return m
 	}
 	// prototype for ValidateStruct
-	errorStr := e.Error()
-	errorList := strings.Split(errorStr, ";")
-	for _, item := range errorList {
-		if len(item) == 0 {
-			continue
+
+	switch e.(type) {
+	case Error:
+		m[e.(Error).Name] = e.(Error).Err.Error()
+	case Errors:
+		for _, item := range e.(Errors).Errors() {
+			m[item.(Error).Name] = item.(Error).Err.Error()
 		}
-		errorByField := strings.Split(item, ": ")
-		m[errorByField[0]] = errorByField[1]
 	}
+
 	return m
 }
 

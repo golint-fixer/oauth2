@@ -32,6 +32,7 @@ func Abs(value float64) float64
 func BlackList(str, chars string) string
 func ByteLength(str string, params ...string) bool
 func StringLength(str string, params ...string) bool
+func StringMatches(s string, params ...string) bool
 func CamelCaseToUnderscore(str string) string
 func Contains(str, substring string) bool
 func Count(array []interface{}, iterator ConditionIterator) int
@@ -180,53 +181,54 @@ govalidator.TagMap["duck"] = govalidator.Validator(func(str string) bool {
 ```
 Here is a list of available validators for struct fields (validator - used function):
 ```go
-"email":          IsEmail,
-"url":            IsURL,
-"requrl":         IsRequestURL,
-"requri":         IsRequestURI,
 "alpha":          IsAlpha,
-"utfletter":      IsUTFLetter,
 "alphanum":       IsAlphanumeric,
-"utfletternum":   IsUTFLetterNumeric,
-"numeric":        IsNumeric,
-"utfnumeric":     IsUTFNumeric,
-"utfdigit":       IsUTFDigit,
+"ascii":          IsASCII,
+"base64":         IsBase64,
+"creditcard":     IsCreditCard,
+"datauri":        IsDataURI,
+"email":          IsEmail,
+"float":          IsFloat,
+"fullwidth":      IsFullWidth,
+"halfwidth":      IsHalfWidth,
 "hexadecimal":    IsHexadecimal,
 "hexcolor":       IsHexcolor,
-"rgbcolor":       IsRGBcolor,
-"lowercase":      IsLowerCase,
-"uppercase":      IsUpperCase,
 "int":            IsInt,
-"float":          IsFloat,
+"ip":             IsIP,
+"ipv4":           IsIPv4,
+"ipv6":           IsIPv6,
+"isbn10":         IsISBN10,
+"isbn13":         IsISBN13,
+"json":           IsJSON,
+"latitude":       IsLatitude,
+"longitude":      IsLongitude,
+"lowercase":      IsLowerCase,
+"mac":            IsMAC,
+"multibyte":      IsMultibyte,
 "null":           IsNull,
+"numeric":        IsNumeric,
+"printableascii": IsPrintableASCII,
+"requri":         IsRequestURI,
+"requrl":         IsRequestURL,
+"rgbcolor":       IsRGBcolor,
+"ssn":            IsSSN
+"uppercase":      IsUpperCase,
+"url":            IsURL,
+"utfdigit":       IsUTFDigit,
+"utfletter":      IsUTFLetter,
+"utfletternum":   IsUTFLetterNumeric,
+"utfnumeric":     IsUTFNumeric,
 "uuid":           IsUUID,
 "uuidv3":         IsUUIDv3,
 "uuidv4":         IsUUIDv4,
 "uuidv5":         IsUUIDv5,
-"creditcard":     IsCreditCard,
-"isbn10":         IsISBN10,
-"isbn13":         IsISBN13,
-"json":           IsJSON,
-"multibyte":      IsMultibyte,
-"ascii":          IsASCII,
-"printableascii": IsPrintableASCII,
-"fullwidth":      IsFullWidth,
-"halfwidth":      IsHalfWidth,
 "variablewidth":  IsVariableWidth,
-"base64":         IsBase64,
-"datauri":        IsDataURI,
-"ip":             IsIP,
-"ipv4":           IsIPv4,
-"ipv6":           IsIPv6,
-"mac":            IsMAC,
-"latitude":       IsLatitude,
-"longitude":      IsLongitude,
-"ssn":            IsSSN
 ```
 Validators with parameters
 
 ```go
 "length(min|max)": ByteLength,
+"matches(pattern)": StringMatches,
 ```
 
 And here is small example of usage:

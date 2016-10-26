@@ -39,6 +39,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			Surname:   sPtr(req.FormValue("surname")),
 			Mail:      sPtr(req.FormValue("mail")),
 			Password:  sPtr(string(passwordHash)),
+			Cause:		 sPtr(req.FormValue("cause")),
 		}
 
 		errs := u.Validate()

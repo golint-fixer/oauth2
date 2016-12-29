@@ -15,5 +15,14 @@ type Group struct {
 	Parti				 *string    `json:"parti,omitempty"`
 	Echelle 		 *string    `json:"echelle,omitempty"`
 	Zone 				 *string    `json:"zone,omitempty"`
+	Display_surname *string 		`json:"display_surname,omitempty"`
+	Display_firstname *string 		`json:"display_firstname,omitempty"`
+	Display_tel *string 		`json:"display_tel,omitempty"`
+	Display_mail *string 		`json:"display_mail,omitempty"`
+	Display_gender *string 		`json:"display_gender,omitempty"`
+	Display_age *string 		`json:"display_age,omitempty"`
+	Display_presence_new *string 		`json:"display_presence_new,omitempty"`
+	Display_presence_around *string 		`json:"display_presence_around,omitempty"`
+	Display_presence_search *string 		`json:"display_presence_search,omitempty"`
 	Users        []User     `json:"contacts,omitempty"`
 }

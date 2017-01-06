@@ -17,6 +17,8 @@ type Group struct {
 	Zone 				 *string    `json:"zone,omitempty"`
 	Display_surname *string 		`json:"display_surname,omitempty"`
 	Display_firstname *string 		`json:"display_firstname,omitempty"`
+	Display_city *string 		`json:"display_city,omitempty"`
+	Display_address *string 		`json:"display_address,omitempty"`
 	Display_tel *string 		`json:"display_tel,omitempty"`
 	Display_mail *string 		`json:"display_mail,omitempty"`
 	Display_gender *string 		`json:"display_gender,omitempty"`

@@ -54,6 +54,9 @@ func serve(ctx *cli.Context) error {
 	if config.Debug() {
 		logs.Level(logs.DebugLevel)
 	}
+	smtpSettings, err := config.Smtp()
+	logs.Info(smtpSettings.User)
+
 
 	dialect, args, err := config.SqlDB()
 	if err != nil {
@@ -95,6 +98,8 @@ func serve(ctx *cli.Context) error {
 
 	app.Components["Templates"] = views.Templates()
 
+	app.Components["Smtp"] = smtpSettings
+
 	app.Components["Mux"] = gojimux.New()
 
 	if config.Debug() {
@@ -111,6 +116,7 @@ func serve(ctx *cli.Context) error {
 	app.Post("/users/register", controllers.Register)
 	app.Get("/users/:id", controllers.RetrieveUser)
 	app.Post("/users/update", controllers.Update)
+	app.Post("/users/validPassword", controllers.ValidPassword)
 
 	app.Get("/groups", controllers.RetrieveGroupCollection)
 	app.Post("/groups", controllers.CreateGroup)

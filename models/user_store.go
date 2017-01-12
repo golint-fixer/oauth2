@@ -9,6 +9,7 @@ type UserDS interface {
 	Delete(*User) error
 	First(*User) error
 	Update(*User) error
+	UpdateGroupIDtoZero(*User) error
 	Find() ([]User, error)
 }
 
@@ -35,12 +36,15 @@ func (s *UserSQL) Save(u *User) error {
 	return err
 }
 
-// Save inserts a new user into the database
+// Update user
 func (s *UserSQL) Update(u *User) error {
+	err := s.DB.Table("users").Where("mail = ?", u.Mail).Updates(u).Error
+	return err
+}
 
-	//err := s.DB.Table("users").Where("mail = ?", u.Mail).Updates("password": u.Password,"group_id":0).Error
-	err := s.DB.Table("users").Where("mail = ?", u.Mail).Updates(map[string]interface{}{"password": u.Password, "group_id": 0}).Error
-
+// Update the group_id to zero
+func (s *UserSQL) UpdateGroupIDtoZero(u *User) error {
+	err := s.DB.Table("users").Where("mail = ?", u.Mail).Updates(map[string]interface{}{"group_id": 0}).Error
 	return err
 }
 

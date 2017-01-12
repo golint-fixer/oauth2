@@ -12,7 +12,10 @@ type User struct {
 	Surname   *string `sql:"not null" json:"surname"`
 	Cause			*string `sql:"not null" json:"cause"`
 	GroupID   uint    `json:"group_id"`
+	OldgroupID   uint    `json:"oldgroup_id"`
+	Validationcode *string `json:"validationcode"`
 }
+
 
 // Validate is used to check if the user infos are correct before inserting it into the database
 func (u *User) Validate() map[string]string {

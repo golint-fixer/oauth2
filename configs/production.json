@@ -16,12 +16,19 @@
     "sqlite3": {
         "path": "/tmp/contacts.sqlite"
     },
-"postgres": {
+    "postgres": {
       "db": "postgres",
       "host": "138.68.127.240",
       "port": 5432,
       "user": "postgres",
       "password": "postgres"
+    },
+    "smtp": {
+      "user":"jbaptiste.daniel@gmail.com",
+      "password":"Rouge836",
+      "host":"http://localhost:8080",
+      "port":"587",
+      "smtpserver":"smtp.gmail.com"
     }
 
   }

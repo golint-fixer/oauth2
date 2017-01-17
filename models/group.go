@@ -26,5 +26,7 @@ type Group struct {
 	Display_presence_new *string 		`json:"display_presence_new,omitempty"`
 	Display_presence_around *string 		`json:"display_presence_around,omitempty"`
 	Display_presence_search *string 		`json:"display_presence_search,omitempty"`
+	Email_referent *string		`json:"email_referent,omitempty"`
+	Code_cause *string		`json:"Code_cause,omitempty"`
 	Users        []User     `json:"contacts,omitempty"`
 }

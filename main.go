@@ -117,8 +117,11 @@ func serve(ctx *cli.Context) error {
 	app.Get("/users/:id", controllers.RetrieveUser)
 	app.Post("/users/update", controllers.Update)
 	app.Post("/users/validPassword", controllers.ValidPassword)
+	app.Post("/users/sendrequesttoreferent", controllers.SendRequestToReferent)
+	app.Post("/users/validUser", controllers.ValidUser)
 
 	app.Get("/groups", controllers.RetrieveGroupCollection)
+	app.Get("/groups/retrieve_mail_referent/:cause", controllers.RetrieveGroupByCode_cause)
 	app.Post("/groups", controllers.CreateGroup)
 	app.Get("/groups/:id", controllers.RetrieveGroup)
 	app.Delete("/groups/:id", controllers.DeleteGroup)

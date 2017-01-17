@@ -57,6 +57,30 @@ func RetrieveGroup(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.Group{Group: &g}, http.StatusOK)
 }
 
+// RetrieveGroup calls the GroupSQL First method and returns the results
+func RetrieveGroupByCode_cause(w http.ResponseWriter, r *http.Request) {
+	Code_cause := router.Context(r).Param("cause")
+	var (
+		g          = models.Group{}
+		db         = getDB(r)
+		groupStore = models.GroupStore(db)
+	)
+	if err := groupStore.FirstByCodeCause(&g, Code_cause); err != nil {
+
+		if ((err == sql.ErrNoRows)||(err.Error() == "record not found")) {
+			logs.Info("Groupe non trouvé")
+			Fail(w, r, nil, http.StatusNotFound)
+			return
+		}
+		logs.Error(err)
+		Error(w, r, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	Success(w, r, views.Group{Group: &g}, http.StatusOK)
+}
+
+
 // UpdateGroup calls the GroupSQL Save method and returns the results
 func UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	var (

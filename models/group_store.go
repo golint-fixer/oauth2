@@ -8,7 +8,9 @@ type GroupDS interface {
 	Save(*Group) error
 	Delete(*Group) error
 	First(*Group, uint) error
+	FirstByCodeCause(*Group, string) error
 	Find() ([]Group, error)
+
 }
 
 // GroupSQL contains a Gorm client and the group and gorm related methods
@@ -44,6 +46,13 @@ func (s *GroupSQL) Delete(g *Group) error {
 // First returns a group from the database using it's ID
 func (s *GroupSQL) First(g *Group, ID uint) error {
 	err := s.DB.Where("ID = ?", ID).Find(g).Error
+
+	return err
+}
+
+// First returns a group from the database using it's ID
+func (s *GroupSQL) FirstByCodeCause(g *Group, Code_cause string) error {
+	err := s.DB.Where("Code_cause = ?", Code_cause).Find(g).Error
 
 	return err
 }

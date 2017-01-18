@@ -112,7 +112,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/settings",
-			"Rev": "5959135345d4b9c3da3e310dfe26acaa6b690115"
+			"Rev": "a95939ef2b836afbbc8d2d5c5ff06e1a3a6c4840"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/web",

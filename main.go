@@ -115,6 +115,7 @@ func serve(ctx *cli.Context) error {
 
 	app.Post("/users/register", controllers.Register)
 	app.Get("/users/:id", controllers.RetrieveUser)
+	app.Get("/users_all/:id", controllers.RetrieveAllUser)
 	app.Post("/users/update", controllers.Update)
 	app.Post("/users/validPassword", controllers.ValidPassword)
 	app.Post("/users/sendrequesttoreferent", controllers.SendRequestToReferent)

@@ -28,5 +28,5 @@ type Group struct {
 	Display_presence_search *string 		`json:"display_presence_search,omitempty"`
 	Email_referent *string		`json:"email_referent,omitempty"`
 	Code_cause *string		`json:"Code_cause,omitempty"`
-	Users        []User     `json:"contacts,omitempty"`
+	Users        []User     `json:"users,omitempty"`
 }

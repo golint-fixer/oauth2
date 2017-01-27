@@ -16,6 +16,18 @@ type User struct {
 	Validationcode *string `json:"validationcode"`
 }
 
+// UserArgs is used in the RPC communications between the gateway and Users
+type UserArgs struct {
+	//MissionID uint
+	User   *User
+}
+
+// UserReply is used in the RPC communications between the gateway and Users
+type UserReply struct {
+	User  *User
+	Users []User
+}
+
 
 // Validate is used to check if the user infos are correct before inserting it into the database
 func (u *User) Validate() map[string]string {

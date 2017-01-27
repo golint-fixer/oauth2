@@ -333,6 +333,38 @@ func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.User{User: &u}, http.StatusOK)
 }
 
+func RetrieveAllUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(router.Context(r).Param("id"))
+	if err != nil {
+		logs.Debug(err)
+		Fail(w, r, map[string]interface{}{"id": "not integer"}, http.StatusBadRequest)
+		return
+	}
+	logs.Debug(id)
+	var (
+		//u         = models.UserReply{}
+		db        = getDB(r)
+		userStore = models.UserStore(db)
+		users2 = []models.User{}
+	)
+
+logs.Debug("idazeazeazaze")
+
+	if users2, err := userStore.Find(); err != nil {
+		logs.Debug(users2)
+		if err == sql.ErrNoRows {
+			Fail(w, r, nil, http.StatusNotFound)
+			return
+		}
+		logs.Error(err)
+		Error(w, r, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	logs.Debug(users2)
+
+	Success(w, r, views.Users{Users: users2}, http.StatusOK)
+}
+
 
 func SendEmail(r *http.Request,type_mail string,to *string,url string,prenom string) {
 	//var settings string

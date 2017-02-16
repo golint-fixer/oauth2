@@ -48,8 +48,6 @@ func Register(w http.ResponseWriter, req *http.Request) {
 		}
 
 		errs := u.Validate()
-		logs.Info("errs")
-		logs.Info(errs)
 		if len(errs) > 0 {
 			logs.Error(errs)
 			Error(w, req, "Vous avez une ou des erreur(s) dans le formulaire d'inscription. vérifiez votre saisie (formatage du mail par exemple)", http.StatusBadRequest)
@@ -65,6 +63,56 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			return
 		}else{
 			SendEmail(req,"Register",sPtr(req.FormValue("mail")),"",req.FormValue("firstname"))
+		}
+	}
+
+	templates := getTemplates(req)
+	if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
+		logs.Error(err)
+	}
+}
+
+func RegisterFromAdmin(w http.ResponseWriter, req *http.Request) {
+	if req.Method == "POST" {
+		req.ParseForm()
+
+		passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.FormValue("password")), bcrypt.DefaultCost)
+		if err != nil {
+			panic(err)
+		}
+
+		ID, err := strconv.ParseUint(req.FormValue("group_id"), 10, 64)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		}
+		//ID = uint(ID)
+
+		u := &models.User{
+			Firstname: sPtr(req.FormValue("firstname")),
+			Surname:   sPtr(req.FormValue("surname")),
+			Mail:      sPtr(req.FormValue("mail")),
+			Password:  sPtr(string(passwordHash)),
+			GroupID:	 uint(ID),
+		}
+
+		errs := u.Validate()
+		if len(errs) > 0 {
+			logs.Error(errs)
+			Error(w, req, "Vous avez une ou des erreur(s) dans le formulaire d'inscription. vérifiez votre saisie (formatage du mail par exemple)", http.StatusBadRequest)
+			//Fail(w, req, "", http.StatusInternalServerError)
+			return
+		}
+
+		var store = models.UserStore(getDB(req))
+		err = store.Save(u)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		}else{
+			SendEmail(req,"RegisterFromAdmin",sPtr(req.FormValue("mail")),req.FormValue("cause"),req.FormValue("firstname"))
 		}
 	}
 
@@ -118,8 +166,7 @@ func ValidPassword(w http.ResponseWriter, req *http.Request) {
 }
 
 func ValidUser(w http.ResponseWriter, req *http.Request) {
-	logs.Info("req.FormValue(email_referent):")
-	logs.Info(req.FormValue("email_referent"))
+
 	u := &models.User{
 		Mail:     sPtr(req.FormValue("mail")),
 		// only to pass the "update" control
@@ -232,7 +279,7 @@ func Update_Group_id_and_url(w http.ResponseWriter, req *http.Request){
 }
 
 // Update a user password and set the group_id to "0"
-func Update(w http.ResponseWriter, req *http.Request) {
+func UpdatePassword(w http.ResponseWriter, req *http.Request) {
 	conf := router.Context(req).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)
 	if req.Method == "POST" {
 		req.ParseForm()
@@ -307,6 +354,81 @@ func Update(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func Update(w http.ResponseWriter, req *http.Request) {
+
+ if req.Method == "PATCH" {
+		req.ParseForm()
+
+		id, err := strconv.Atoi(req.FormValue("id"))
+		if err != nil {
+			logs.Debug(err)
+			Fail(w, req, map[string]interface{}{"id": "not integer"}, http.StatusBadRequest)
+			return
+		}
+		//affecte le mail et le nouveau password hashé au user
+		u := &models.User{
+			Mail:     sPtr(req.FormValue("Mail")),
+			Surname: sPtr(req.FormValue("surname")),
+			Firstname: sPtr(req.FormValue("firstname")),
+			Password : sPtr(""),
+			ID: int64(id),
+		}
+
+		//valide la formation du mail
+		errs := u.ValidateEmail()
+		if len(errs) > 0 {
+			logs.Error(errs)
+			Error(w, req, "vérifiez votre saisie (formatage du mail)", http.StatusBadRequest)
+			//Fail(w, req, "", http.StatusInternalServerError)
+			return
+		}
+
+		//recupération du user par le mail et affectation des différents champs
+		var store = models.UserStore(getDB(req))
+
+		//mise à jour en base du user
+		err = store.Update(u)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		}
+		//Success(w, req, views.User{User: u}, http.StatusOK)
+	}
+}
+
+func Delete(w http.ResponseWriter, req *http.Request) {
+
+ if req.Method == "DELETE" {
+		req.ParseForm()
+
+		//id, err := strconv.Atoi(req.FormValue("id"))
+		id, err := strconv.Atoi(router.Context(req).Param("id"))
+		if err != nil {
+			logs.Debug(err)
+			Fail(w, req, map[string]interface{}{"id": "not integer"}, http.StatusBadRequest)
+			return
+		}
+
+		u := &models.User{
+			ID: int64(id),
+		}
+
+		//recupération du user par le mail et affectation des différents champs
+		var store = models.UserStore(getDB(req))
+
+		//mise à jour en base du user
+		err = store.Delete(u)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		}
+		//Success(w, req, views.User{User: u}, http.StatusOK)
+ }
+}
+
+
 // Returns a user
 func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(router.Context(r).Param("id"))
@@ -321,7 +443,7 @@ func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 		db        = getDB(r)
 		userStore = models.UserStore(db)
 	)
-	if err = userStore.First(&u); err != nil {
+	if err := userStore.First(&u); err != nil {
 		if err == sql.ErrNoRows {
 			Fail(w, r, nil, http.StatusNotFound)
 			return
@@ -333,25 +455,25 @@ func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.User{User: &u}, http.StatusOK)
 }
 
-func RetrieveAllUser(w http.ResponseWriter, r *http.Request) {
+func RetrieveAllUsers(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(router.Context(r).Param("id"))
 	if err != nil {
 		logs.Debug(err)
 		Fail(w, r, map[string]interface{}{"id": "not integer"}, http.StatusBadRequest)
 		return
 	}
-	logs.Debug(id)
+
 	var (
-		//u         = models.UserReply{}
 		db        = getDB(r)
 		userStore = models.UserStore(db)
-		users2 = []models.User{}
+		users2 = models.UserReply{}
+		user = models.User{GroupID:uint(id)}
+		//users2.User = models.User{GroupID:id}
 	)
 
-logs.Debug("idazeazeazaze")
+	users2.User = &user
 
-	if users2, err := userStore.Find(); err != nil {
-		logs.Debug(users2)
+	if err := userStore.Find(&users2); err != nil {
 		if err == sql.ErrNoRows {
 			Fail(w, r, nil, http.StatusNotFound)
 			return
@@ -360,9 +482,7 @@ logs.Debug("idazeazeazaze")
 		Error(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	logs.Debug(users2)
-
-	Success(w, r, views.Users{Users: users2}, http.StatusOK)
+	Success(w, r, views.Users{Users: users2.Users}, http.StatusOK)
 }
 
 
@@ -415,6 +535,15 @@ func SendEmail(r *http.Request,type_mail string,to *string,url string,prenom str
 			"\r\n" +
 			"Bonjour " + prenom +",\r" +
 			"Votre compte sera activé dès que votre référent l'aura fait.\r" +
+			"l'équipe QUORUM" +
+			"\r\n")
+	}else if (type_mail=="RegisterFromAdmin"){
+		msg = []byte("To: "+*to+"\r\n" +
+			"Subject: demande de compte\r\n" +
+			"\r\n" +
+			"Bravo " + prenom +"!\r" +
+			"Vous faites maintenant parti de la campagne de mobilisation '"+url+"'.\r" +
+			"Afin de pouvoir accéder à votre application, merci d'initialiser votre mot de passe via 'mot de passe oublié' sur votre écran d'authentification.\r" +
 			"l'équipe QUORUM" +
 			"\r\n")
 	}else if (type_mail=="ValidationUser"){

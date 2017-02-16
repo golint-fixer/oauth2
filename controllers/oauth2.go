@@ -17,6 +17,7 @@ import (
 	"github.com/quorumsco/logs"
 	"github.com/quorumsco/oauth2/models"
 	"github.com/quorumsco/router"
+	"github.com/ory-am/ladon"
 )
 
 // OAuthComponents returns the OAuth client defined in the main
@@ -26,6 +27,7 @@ func OAuthComponent(r *http.Request) *osin.Server {
 
 // Authorize endpoint
 func Authorize(w http.ResponseWriter, r *http.Request) {
+
 	server := OAuthComponent(r)
 	resp := server.NewResponse()
 	defer resp.Close()
@@ -119,12 +121,63 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		resp   = server.NewResponse()
 	)
 	defer resp.Close()
-
 	if ir := server.HandleInfoRequest(resp, r); ir != nil {
 		// don't process if is already an error
 		if resp.IsError {
 			return
 		}
+//--------------------------------------LADON ------------------------------------
+		var pol = &ladon.DefaultPolicy{
+			ID:        "1",
+			Description: "This policy allows max to update any resource",
+			Subjects:  []string{"max"},
+			Actions:   []string{"delete"},
+			Resources: []string{"<.*>"},
+			Effect:    ladon.AllowAccess,
+			Conditions: ladon.Conditions{
+				"clientIP": &ladon.CIDRCondition{
+					//CIDR: "1.1.1.1/32",
+					//CIDR: "0.0.0.0/0",
+					CIDR: "0.0.0.0/1",
+					//CIDR: "127.0.0.1/32",
+				},
+		},
+
+		}
+		// db := redis.NewClient(&redis.Options{
+    //     Addr:     "localhost:6379",
+    // })
+		//
+    // if err := db.Ping().Err(); err != nil {
+    //     logs.Error("Could not connect to database")
+    // }
+
+		warden := &ladon.Ladon{
+        Manager: ladon.NewMemoryManager(),
+				//Manager: ladon.NewRedisManager(db, "redis_key_prefix:"),
+    }
+    err := warden.Manager.Create(pol)
+		if err != nil {
+			logs.Error("err Create(pol):")
+			logs.Error(err)
+			return
+		}
+
+		err2 := warden.IsAllowed(&ladon.Request{
+			Subject:  "max",
+			Action:   "delete",
+			Resource: "myrn:some.domain.com:resource:123",
+			Context: ladon.Context{
+				"clientIP": "127.0.0.1",
+			},
+    });
+		if err2 != nil {
+        logs.Error("Access denied")
+				logs.Error(err2)
+				return
+    }
+
+//--------------------------------------FIN LADON ------------------------------------
 		// output data
 		resp.Output["client_id"] = ir.AccessData.Client.GetId()
 		// resp.Output["access_token"] = ir.AccessData.AccessToken
@@ -139,6 +192,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		if ir.AccessData.UserData != nil {
 			resp.Output["owner"] = ir.AccessData.UserData.(string)
 		}
+		server.FinishInfoRequest(resp, r, ir)
 	}
 	//Right here retry with the session.
 	osin.OutputJSON(resp, w, r)

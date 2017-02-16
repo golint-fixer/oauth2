@@ -1,7 +1,9 @@
 // Definition of the structures and SQL interaction functions
 package models
 
-import "github.com/jinzhu/gorm"
+import ("github.com/jinzhu/gorm"
+"github.com/quorumsco/logs"
+)
 
 // GroupDS implements the GroupSQL methods
 type UserDS interface {
@@ -10,7 +12,8 @@ type UserDS interface {
 	First(*User) error
 	Update(*User) error
 	UpdateGroupIDtoZero(*User) error
-	Find() ([]User, error)
+	UpdateGroupIDandOldGroupIdtoZero(*User) error
+	Find(*UserReply) error
 }
 
 // UserSQL contains a Gorm client and the user and gorm related methods
@@ -38,13 +41,23 @@ func (s *UserSQL) Save(u *User) error {
 
 // Update user
 func (s *UserSQL) Update(u *User) error {
-	err := s.DB.Table("users").Where("mail = ?", u.Mail).Updates(u).Error
+	var err error
+	if u.ID != 0 {
+		err = s.DB.Table("users").Where("id = ?", u.ID).Updates(u).Error
+	} else {
+		err = s.DB.Table("users").Where("mail = ?", u.Mail).Updates(u).Error
+	}
 	return err
 }
 
 // Update the group_id to zero
 func (s *UserSQL) UpdateGroupIDtoZero(u *User) error {
 	err := s.DB.Table("users").Where("mail = ?", u.Mail).Updates(map[string]interface{}{"group_id": 0}).Error
+	return err
+}
+
+func (s *UserSQL) UpdateGroupIDandOldGroupIdtoZero(u *User) error {
+	err := s.DB.Table("users").Where("ID = ?", u.ID).Updates(map[string]interface{}{"group_id": 0,"oldgroup_id": 0}).Error
 	return err
 }
 
@@ -68,12 +81,28 @@ func (s *UserSQL) First(u *User) error {
 	return err
 }
 
+
+	// func (s *ContactSQL) Find(args ContactArgs) ([]Contact, error) {
+	// 	var contacts []Contact
+	//
+	// 	err := s.DB.Where("group_id = ?", args.Contact.GroupID).Limit(1000).Find(&contacts).Error
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	//
+	// 	return contacts, nil
+	// }
+
 // Find returns every user with a given groupID from the database
-func (s *UserSQL) Find() ([]User, error) {
-	var users []User
-	err := s.DB.Find(&users).Error
-	if err != nil {
-		return users, nil
+func (s *UserSQL) Find(u *UserReply) error {
+	logs.Debug(u.User.GroupID)
+	//var users []User
+	var err error
+
+	if u.User.GroupID != 0 {
+		err = s.DB.Where("group_id = ?", u.User.GroupID).Find(&u.Users).Error
+	} else {
+		err = s.DB.Find(&u.Users).Error
 	}
-	return users, err
+	return err
 }

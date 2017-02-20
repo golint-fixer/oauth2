@@ -455,13 +455,34 @@ func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.User{User: &u}, http.StatusOK)
 }
 
+
 func RetrieveAllUsers(w http.ResponseWriter, r *http.Request) {
+
 	id, err := strconv.Atoi(router.Context(r).Param("id"))
 	if err != nil {
 		logs.Debug(err)
 		Fail(w, r, map[string]interface{}{"id": "not integer"}, http.StatusBadRequest)
 		return
 	}
+	r.ParseForm()
+	limit, err := strconv.Atoi(r.FormValue("limit"))
+	if err != nil {
+		logs.Debug(err)
+		limit=-1
+	}
+
+	offset, err := strconv.Atoi(r.FormValue("offset"))
+	if err != nil {
+		logs.Debug(err)
+		offset=-1
+	}
+
+	sort:=r.FormValue("sort")
+	if (sort == "false"){
+		sort="desc"
+		}else {
+		sort="asc"
+		}
 
 	var (
 		db        = getDB(r)
@@ -473,7 +494,7 @@ func RetrieveAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	users2.User = &user
 
-	if err := userStore.Find(&users2); err != nil {
+	if err := userStore.Find(&users2,limit,offset,sort); err != nil {
 		if err == sql.ErrNoRows {
 			Fail(w, r, nil, http.StatusNotFound)
 			return
@@ -482,7 +503,7 @@ func RetrieveAllUsers(w http.ResponseWriter, r *http.Request) {
 		Error(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	Success(w, r, views.Users{Users: users2.Users}, http.StatusOK)
+	Success(w, r, views.Users{Users: users2.Users,Count:users2.Count}, http.StatusOK)
 }
 
 

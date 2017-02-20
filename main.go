@@ -117,7 +117,7 @@ func serve(ctx *cli.Context) error {
 	app.Post("/users/register", controllers.Register)
 	app.Post("/users/registerFromAdmin", controllers.RegisterFromAdmin)
 	app.Get("/users/:id", controllers.RetrieveUser)
-	app.Get("/users_all/:id", controllers.RetrieveAllUsers)
+	app.Post("/users_all/:id", controllers.RetrieveAllUsers)
 	app.Patch("/users/update", controllers.Update)
 	app.Delete("/users/:id", controllers.Delete)
 	app.Post("/users/updatePassword", controllers.UpdatePassword)

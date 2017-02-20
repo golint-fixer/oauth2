@@ -26,6 +26,7 @@ type UserArgs struct {
 type UserReply struct {
 	User  *User
 	Users []User
+	Count int
 }
 
 

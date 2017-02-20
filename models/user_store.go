@@ -13,7 +13,7 @@ type UserDS interface {
 	Update(*User) error
 	UpdateGroupIDtoZero(*User) error
 	UpdateGroupIDandOldGroupIdtoZero(*User) error
-	Find(*UserReply) error
+	Find(*UserReply, int, int, string) error
 }
 
 // UserSQL contains a Gorm client and the user and gorm related methods
@@ -93,16 +93,17 @@ func (s *UserSQL) First(u *User) error {
 	// 	return contacts, nil
 	// }
 
+
 // Find returns every user with a given groupID from the database
-func (s *UserSQL) Find(u *UserReply) error {
-	logs.Debug(u.User.GroupID)
-	//var users []User
+func (s *UserSQL) Find(u *UserReply,limit int,offset int,sort string) error {
 	var err error
 
 	if u.User.GroupID != 0 {
-		err = s.DB.Where("group_id = ?", u.User.GroupID).Find(&u.Users).Error
+		err = s.DB.Order("surname "+sort+",firstname "+sort).Where("group_id = ?", u.User.GroupID).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
+
 	} else {
-		err = s.DB.Find(&u.Users).Error
+		err = s.DB.Order("surname "+sort+",firstname "+sort).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
+
 	}
 	return err
 }

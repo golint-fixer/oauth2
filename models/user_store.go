@@ -2,7 +2,6 @@
 package models
 
 import ("github.com/jinzhu/gorm"
-"github.com/quorumsco/logs"
 )
 
 // GroupDS implements the GroupSQL methods

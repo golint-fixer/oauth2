@@ -16,6 +16,7 @@ type Group struct {
 	Echelle 		 *string    `json:"echelle,omitempty"`
 	Zone 				 *string    `json:"zone,omitempty"`
 	Display_surname *string 		`json:"display_surname,omitempty"`
+	Display_married_name *string 		`json:"display_married_name,omitempty"`
 	Display_firstname *string 		`json:"display_firstname,omitempty"`
 	Display_city *string 		`json:"display_city,omitempty"`
 	Display_address *string 		`json:"display_address,omitempty"`

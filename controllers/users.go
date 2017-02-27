@@ -93,6 +93,7 @@ func RegisterFromAdmin(w http.ResponseWriter, req *http.Request) {
 			Firstname: sPtr(req.FormValue("firstname")),
 			Surname:   sPtr(req.FormValue("surname")),
 			Mail:      sPtr(req.FormValue("mail")),
+			Role:      sPtr(req.FormValue("role")),
 			Password:  sPtr(string(passwordHash)),
 			GroupID:	 uint(ID),
 		}
@@ -370,6 +371,7 @@ func Update(w http.ResponseWriter, req *http.Request) {
 			Mail:     sPtr(req.FormValue("Mail")),
 			Surname: sPtr(req.FormValue("surname")),
 			Firstname: sPtr(req.FormValue("firstname")),
+			Role: sPtr(req.FormValue("role")),
 			Password : sPtr(""),
 			ID: int64(id),
 		}

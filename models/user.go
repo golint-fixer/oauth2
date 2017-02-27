@@ -10,6 +10,7 @@ type User struct {
 	Password  *string `sql:"not null" json:"Password"`
 	Firstname *string `sql:"not null" json:"firstname"`
 	Surname   *string `sql:"not null" json:"surname"`
+	Role	*string `json:"role"`
 	Cause			*string `sql:"not null" json:"cause"`
 	GroupID   uint    `json:"group_id"`
 	OldgroupID   uint    `json:"oldgroup_id"`

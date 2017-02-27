@@ -66,6 +66,13 @@ func getUserInfos(username string, password string, r *http.Request) (string, er
 	if u.GroupID == 0 {
 		return "0", errors.New("User not activate")
 	}
+	//----- CONTROLE ACCES WEBAPP -----------//
+	//logs.Debug(r.Host)
+	if (r.Host == "https://test.quorumapps.com"||r.Host == "test.quorumapps.com"||r.Host == "https://cloud.quorumapps.com"||r.Host == "cloud.quorumapps.com") && *u.Role != "admin" {
+		return "0", errors.New("User not activate")
+	}
+
+	//----- END CONTROLE ACCES WEBAPP -----------//
 
 	userInfos := fmt.Sprintf("%d:%d", u.ID, u.GroupID)
 

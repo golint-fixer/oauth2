@@ -69,7 +69,7 @@ func getUserInfos(username string, password string,origin string, r *http.Reques
 	//----- CONTROLE ACCES WEBAPP -----------//
 
 	logs.Debug("request origin:"+origin)
-	if (origin == "https://test.quorumapps.com"||origin == "test.quorumapps.com"||origin == "https://cloud.quorumapps.com"||origin == "cloud.quorumapps.com"||origin == "http://localhost:8101"){
+	if (origin == "https://test.quorumapps.com"||origin == "test.quorumapps.com"||origin == "https://cloud.quorumapps.com"||origin == "cloud.quorumapps.com"){
 		if ((u.Role==nil)){
 			logs.Debug("can't access")
 			//logs.Debug(*u.Role)
@@ -79,9 +79,6 @@ func getUserInfos(username string, password string,origin string, r *http.Reques
 			//logs.Debug(*u.Role)
 			return "0", errors.New("User not activate")
 		}
-		logs.Debug("can access, role:")
-		logs.Debug(*u.Role)
-	}else{
 		logs.Debug("can access, role:")
 		logs.Debug(*u.Role)
 	}

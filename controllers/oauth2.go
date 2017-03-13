@@ -47,7 +47,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 }
 
 // Returns the user infos from the database using the credentials
-func getUserInfos(username string, password string, r *http.Request) (string, error) {
+func getUserInfos(username string, password string,origin string, r *http.Request) (string, error) {
 	var (
 		u         = models.User{Mail: &username, Password: sPtr(password)}
 		db        = getDB(r)
@@ -67,8 +67,10 @@ func getUserInfos(username string, password string, r *http.Request) (string, er
 		return "0", errors.New("User not activate")
 	}
 	//----- CONTROLE ACCES WEBAPP -----------//
-	//logs.Debug(r.Host)
-	if (r.Host == "https://test.quorumapps.com"||r.Host == "test.quorumapps.com"||r.Host == "https://cloud.quorumapps.com"||r.Host == "cloud.quorumapps.com") && *u.Role != "admin" {
+logs.Debug("------------------------------------------------")
+	logs.Debug(origin)
+	logs.Debug("------------------------------------------------")
+	if (origin == "https://test.quorumapps.com"||origin == "test.quorumapps.com"||origin == "https://cloud.quorumapps.com"||origin == "cloud.quorumapps.com"||origin == "http://localhost:8081") && *u.Role != "admin" {
 		return "0", errors.New("User not activate")
 	}
 
@@ -81,12 +83,12 @@ func getUserInfos(username string, password string, r *http.Request) (string, er
 
 // Token endpoint
 func Token(w http.ResponseWriter, r *http.Request) {
+	logs.Debug(r.FormValue("Origin"))
 	var (
 		server = OAuthComponent(r)
 		resp   = server.NewResponse()
 	)
 	defer resp.Close()
-
 	if ar := server.HandleAccessRequest(resp, r); ar != nil {
 		switch ar.Type {
 		case osin.AUTHORIZATION_CODE:
@@ -94,7 +96,7 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		case osin.REFRESH_TOKEN:
 			ar.Authorized = true
 		case osin.PASSWORD:
-			userInfos, err := getUserInfos(ar.Username, ar.Password, r)
+			userInfos, err := getUserInfos(ar.Username, ar.Password, r.FormValue("Origin"), r)
 			if err != nil {
 				resp.IsError = true
 				resp.InternalError = err

@@ -98,7 +98,7 @@ func (s *UserSQL) Find(u *UserReply,limit int,offset int,sort string) error {
 	var err error
 
 	if u.User.GroupID != 0 {
-		err = s.DB.Order("surname "+sort+",firstname "+sort).Where("group_id = ?", u.User.GroupID).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
+		err = s.DB.Order("surname "+sort+",firstname "+sort).Where("group_id = ?", u.User.GroupID).Where("not mail  ~ '@quorum.co$'").Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
 
 	} else {
 		err = s.DB.Order("surname "+sort+",firstname "+sort).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error

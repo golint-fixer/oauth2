@@ -565,7 +565,7 @@ func SendEmail(r *http.Request,type_mail string,to *string,url string,prenom str
 			"Subject: demande de compte\r\n" +
 			"\r\n" +
 			"Bravo " + prenom +"!\r" +
-			"Vous faites maintenant parti de la campagne de mobilisation '"+url+"'.\r" +
+			"Vous faites maintenant partie de la campagne de mobilisation '"+url+"'.\r" +
 			"Afin de pouvoir accéder à votre application, merci d'initialiser votre mot de passe via 'mot de passe oublié' sur votre écran d'authentification.\r" +
 			"l'équipe QUORUM" +
 			"\r\n")

@@ -25,6 +25,7 @@ type Group struct {
 	Display_gender *string 		`json:"display_gender,omitempty"`
 	Display_age *string 		`json:"display_age,omitempty"`
 	Display_sendmail *string 		`json:"display_sendmail,omitempty"`
+	Display_autosendmail_confirm *string 		`json:"display_autosendmail_confirm,omitempty"`
 	Display_presence_new *string 		`json:"display_presence_new,omitempty"`
 	Display_presence_around *string 		`json:"display_presence_around,omitempty"`
 	Display_presence_search *string 		`json:"display_presence_search,omitempty"`

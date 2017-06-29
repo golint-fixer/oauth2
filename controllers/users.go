@@ -43,8 +43,11 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			Firstname: sPtr(req.FormValue("firstname")),
 			Surname:   sPtr(req.FormValue("surname")),
 			Mail:      sPtr(req.FormValue("mail")),
+			Phone: sPtr(req.FormValue("phone")),
+			Address: sPtr(req.FormValue("address")),
 			Password:  sPtr(string(passwordHash)),
 			Cause:		 sPtr(req.FormValue("cause")),
+
 		}
 
 		errs := u.Validate()
@@ -94,6 +97,8 @@ func RegisterFromAdmin(w http.ResponseWriter, req *http.Request) {
 			Surname:   sPtr(req.FormValue("surname")),
 			Mail:      sPtr(req.FormValue("mail")),
 			Role:      sPtr(req.FormValue("role")),
+			Phone: sPtr(req.FormValue("phone")),
+			Address: sPtr(req.FormValue("address")),
 			Password:  sPtr(string(passwordHash)),
 			GroupID:	 uint(ID),
 		}
@@ -372,6 +377,8 @@ func Update(w http.ResponseWriter, req *http.Request) {
 			Surname: sPtr(req.FormValue("surname")),
 			Firstname: sPtr(req.FormValue("firstname")),
 			Role: sPtr(req.FormValue("role")),
+			Phone: sPtr(req.FormValue("phone")),
+			Address: sPtr(req.FormValue("address")),
 			Password : sPtr(""),
 			ID: int64(id),
 		}

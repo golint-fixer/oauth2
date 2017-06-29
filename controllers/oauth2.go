@@ -17,7 +17,8 @@ import (
 	"github.com/quorumsco/logs"
 	"github.com/quorumsco/oauth2/models"
 	"github.com/quorumsco/router"
-	"github.com/ory-am/ladon"
+	"github.com/ory/ladon"
+	manager "github.com/ory-am/ladon/manager/memory"
 )
 
 // OAuthComponents returns the OAuth client defined in the main
@@ -171,7 +172,9 @@ func Info(w http.ResponseWriter, r *http.Request) {
     // }
 
 		warden := &ladon.Ladon{
-        Manager: ladon.NewMemoryManager(),
+        //Manager: ladon.NewMemoryManager(),
+				Manager: manager.NewMemoryManager(),
+
 				//Manager: ladon.NewRedisManager(db, "redis_key_prefix:"),
     }
     err := warden.Manager.Create(pol)

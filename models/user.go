@@ -15,6 +15,8 @@ type User struct {
 	GroupID   uint    `json:"group_id"`
 	OldgroupID   uint    `json:"oldgroup_id"`
 	Validationcode *string `json:"validationcode"`
+	Phone *string    `json:"phone"`
+	Address      *string    `json:"address"`
 }
 
 // UserArgs is used in the RPC communications between the gateway and Users

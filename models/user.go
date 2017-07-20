@@ -5,24 +5,24 @@ import "github.com/asaskevich/govalidator"
 
 // User represent a user in the database
 type User struct {
-	ID        int64   `json:"id"`
-	Mail      *string `sql:"not null;unique" json:"Mail"`
-	Password  *string `sql:"not null" json:"Password"`
-	Firstname *string `sql:"not null" json:"firstname"`
-	Surname   *string `sql:"not null" json:"surname"`
-	Role	*string `json:"role"`
-	Cause			*string `sql:"not null" json:"cause"`
-	GroupID   uint    `json:"group_id"`
-	OldgroupID   uint    `json:"oldgroup_id"`
+	ID             int64   `json:"id"`
+	Mail           *string `sql:"not null;unique" json:"mail"`
+	Password       *string `sql:"not null" json:"password"`
+	Firstname      *string `sql:"not null" json:"firstname"`
+	Surname        *string `sql:"not null" json:"surname"`
+	Role           *string `json:"role"`
+	Cause          *string `sql:"not null" json:"cause"`
+	GroupID        uint    `json:"group_id"`
+	OldgroupID     uint    `json:"oldgroup_id"`
 	Validationcode *string `json:"validationcode"`
-	Phone *string    `json:"phone"`
-	Address      *string    `json:"address"`
+	Phone          *string `json:"phone"`
+	Address        *string `json:"address"`
 }
 
 // UserArgs is used in the RPC communications between the gateway and Users
 type UserArgs struct {
 	//MissionID uint
-	User   *User
+	User *User
 }
 
 // UserReply is used in the RPC communications between the gateway and Users
@@ -31,7 +31,6 @@ type UserReply struct {
 	Users []User
 	Count int
 }
-
 
 // Validate is used to check if the user infos are correct before inserting it into the database
 func (u *User) Validate() map[string]string {

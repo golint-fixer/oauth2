@@ -1,7 +1,8 @@
 // Definition of the structures and SQL interaction functions
 package models
 
-import ("github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
 )
 
 // GroupDS implements the GroupSQL methods
@@ -56,7 +57,7 @@ func (s *UserSQL) UpdateGroupIDtoZero(u *User) error {
 }
 
 func (s *UserSQL) UpdateGroupIDandOldGroupIdtoZero(u *User) error {
-	err := s.DB.Table("users").Where("ID = ?", u.ID).Updates(map[string]interface{}{"group_id": 0,"oldgroup_id": 0}).Error
+	err := s.DB.Table("users").Where("ID = ?", u.ID).Updates(map[string]interface{}{"group_id": 0, "oldgroup_id": 0}).Error
 	return err
 }
 
@@ -80,28 +81,26 @@ func (s *UserSQL) First(u *User) error {
 	return err
 }
 
-
-	// func (s *ContactSQL) Find(args ContactArgs) ([]Contact, error) {
-	// 	var contacts []Contact
-	//
-	// 	err := s.DB.Where("group_id = ?", args.Contact.GroupID).Limit(1000).Find(&contacts).Error
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	//
-	// 	return contacts, nil
-	// }
-
+// func (s *ContactSQL) Find(args ContactArgs) ([]Contact, error) {
+// 	var contacts []Contact
+//
+// 	err := s.DB.Where("group_id = ?", args.Contact.GroupID).Limit(1000).Find(&contacts).Error
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	return contacts, nil
+// }
 
 // Find returns every user with a given groupID from the database
-func (s *UserSQL) Find(u *UserReply,limit int,offset int,sort string) error {
+func (s *UserSQL) Find(u *UserReply, limit int, offset int, sort string) error {
 	var err error
 
 	if u.User.GroupID != 0 {
 		err = s.DB.Order("surname "+sort+",firstname "+sort).Where("group_id = ?", u.User.GroupID).Where("not mail  ~ '@quorum.co$'").Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
 
 	} else {
-		err = s.DB.Order("surname "+sort+",firstname "+sort).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
+		err = s.DB.Order("surname " + sort + ",firstname " + sort).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
 
 	}
 	return err

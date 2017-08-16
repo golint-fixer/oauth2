@@ -1,7 +1,10 @@
 // Definition of the structures and SQL interaction functions
 package models
 
-import "github.com/asaskevich/govalidator"
+import (
+	"time"
+	"github.com/asaskevich/govalidator"
+)
 
 // User represent a user in the database
 type User struct {
@@ -17,6 +20,7 @@ type User struct {
 	Validationcode *string `json:"validationcode"`
 	Phone          *string `json:"phone"`
 	Address        *string `json:"address"`
+	Created        *time.Time `json:"created,omitempty"`
 }
 
 // UserArgs is used in the RPC communications between the gateway and Users

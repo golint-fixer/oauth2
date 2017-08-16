@@ -39,6 +39,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			panic(err)
 		}
 
+		curTime := time.Now()
 		u := &models.User{
 			Firstname: sPtr(req.FormValue("firstname")),
 			Surname:   sPtr(req.FormValue("surname")),
@@ -47,6 +48,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			Address:   sPtr(req.FormValue("address")),
 			Password:  sPtr(string(passwordHash)),
 			Cause:     sPtr(req.FormValue("cause")),
+			Created:   &curTime,
 		}
 
 		errs := u.Validate()
@@ -91,6 +93,7 @@ func RegisterFromAdmin(w http.ResponseWriter, req *http.Request) {
 		}
 		//ID = uint(ID)
 
+		curTime := time.Now()
 		u := &models.User{
 			Firstname: sPtr(req.FormValue("firstname")),
 			Surname:   sPtr(req.FormValue("surname")),
@@ -100,6 +103,7 @@ func RegisterFromAdmin(w http.ResponseWriter, req *http.Request) {
 			Address:   sPtr(req.FormValue("address")),
 			Password:  sPtr(string(passwordHash)),
 			GroupID:   uint(ID),
+			Created:   &curTime,
 		}
 
 		errs := u.Validate()

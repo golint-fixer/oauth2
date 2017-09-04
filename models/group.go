@@ -32,5 +32,6 @@ type Group struct {
 	Create_contact_onreject        *string    `json:"create_contact_onreject,omitempty"`
 	Email_referent                 *string    `json:"email_referent,omitempty"`
 	Code_cause                     *string    `json:"code_cause,omitempty"`
+	Code_edit_form                 *string    `json:"code_edit_form,omitempty"`
 	Users                          []User     `json:"users,omitempty"`
 }

@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/quorumsco/oauth2",
 	"GoVersion": "go1.8",
-	"GodepVersion": "v72",
+	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "github.com/RangelReale/osin",
@@ -150,7 +150,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/settings",
-			"Rev": "a95939ef2b836afbbc8d2d5c5ff06e1a3a6c4840"
+			"Rev": "02c271e3ef5c7023744eb4ab8f2cab392a49b801"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",

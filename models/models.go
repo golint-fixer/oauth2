@@ -9,6 +9,6 @@ import (
 
 func Models() []interface{} {
 	return []interface{}{
-		&User{}, &Group{},
+		&User{}, &Group{}, &Team{},
 	}
 }

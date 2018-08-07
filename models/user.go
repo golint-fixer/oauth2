@@ -17,6 +17,7 @@ type User struct {
 	Cause          *string    `sql:"not null" json:"cause"`
 	GroupID        uint       `json:"group_id"`
 	OldgroupID     uint       `json:"oldgroup_id"`
+	Teams          []*Team    `json:"team_ids",gorm:"many2many:teams;"`
 	Validationcode *string    `json:"validationcode"`
 	Phone          *string    `json:"phone"`
 	Address        *string    `json:"address"`
@@ -37,6 +38,7 @@ type UserArgs struct {
 type UserReply struct {
 	User  *User
 	Users []User
+	Teams []Team
 	Count int
 }
 

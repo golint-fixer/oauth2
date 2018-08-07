@@ -6,7 +6,7 @@ import (
 	// "github.com/asaskevich/govalidator"
 )
 
-// Group represents the componenents of a group
+// Group represents the components of a group
 type Group struct {
 	ID                             uint       `json:"id"`
 	Name                           *string    `json:"name,omitempty"`
@@ -34,4 +34,5 @@ type Group struct {
 	Code_cause                     *string    `json:"code_cause,omitempty"`
 	Code_edit_form                 *string    `json:"code_edit_form,omitempty"`
 	Users                          []User     `json:"users,omitempty"`
+	Teams                          []Team     `json:"teams,omitempty"`
 }

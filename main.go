@@ -57,7 +57,6 @@ func serve(ctx *cli.Context) error {
 	smtpSettings, err := config.Smtp()
 	logs.Info(smtpSettings.User)
 
-
 	dialect, args, err := config.SqlDB()
 	if err != nil {
 		logs.Critical(err)
@@ -117,7 +116,8 @@ func serve(ctx *cli.Context) error {
 	app.Post("/users/register", controllers.Register)
 	app.Post("/users/registerFromAdmin", controllers.RegisterFromAdmin)
 	app.Get("/users/:id", controllers.RetrieveUser)
-	app.Post("/users_all/:id", controllers.RetrieveAllUsers)
+	app.Post("/users_all/:id", controllers.RetrieveAllUsersByGroup)
+	app.Post("/users_team/:id", controllers.RetrieveAllUsersByTeam)
 	app.Patch("/users/update", controllers.Update)
 	app.Delete("/users/:id", controllers.Delete)
 	app.Post("/users/updatePassword", controllers.UpdatePassword)
@@ -131,6 +131,13 @@ func serve(ctx *cli.Context) error {
 	app.Get("/groups/:id", controllers.RetrieveGroup)
 	app.Delete("/groups/:id", controllers.DeleteGroup)
 	app.Patch("/groups/:id", controllers.UpdateGroup)
+
+	app.Get("/teams", controllers.RetrieveTeamCollection)
+	app.Post("/teams", controllers.CreateTeam)
+	app.Get("/teams/:id", controllers.RetrieveTeam)
+	app.Delete("/teams/:id", controllers.DeleteTeam)
+	app.Patch("/teams/:id", controllers.UpdateTeam)
+	app.Get("/teams/retrieve_team_group/:id", controllers.RetrieveTeamByGroupID)
 
 	server, err := config.Server()
 	if err != nil {

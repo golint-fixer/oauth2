@@ -14,6 +14,7 @@ type UserDS interface {
 	UpdateGroupIDtoZero(*User) error
 	UpdateGroupIDandOldGroupIdtoZero(*User) error
 	Find(*UserReply, int, int, string) error
+	FindByTeam(*UserReply, int, int, string) error
 }
 
 // UserSQL contains a Gorm client and the user and gorm related methods
@@ -98,6 +99,20 @@ func (s *UserSQL) Find(u *UserReply, limit int, offset int, sort string) error {
 
 	if u.User.GroupID != 0 {
 		err = s.DB.Order("surname "+sort+",firstname "+sort).Where("group_id = ?", u.User.GroupID).Where("not mail  ~ '@quorum.co$'").Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
+
+	} else {
+		err = s.DB.Order("surname " + sort + ",firstname " + sort).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
+
+	}
+	return err
+}
+
+// Find returns every user with a given teamID from the database
+func (s *UserSQL) FindByTeam(u *UserReply, limit int, offset int, sort string) error {
+	var err error
+
+	if u.User.GroupID != 0 {
+		err = s.DB.Order("surname "+sort+",firstname "+sort).Where("team_id = ?", u.User.Teams[0]).Where("not mail  ~ '@quorum.co$'").Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error
 
 	} else {
 		err = s.DB.Order("surname " + sort + ",firstname " + sort).Offset(offset).Limit(limit).Find(&u.Users).Offset(-1).Limit(-1).Count(&u.Count).Error

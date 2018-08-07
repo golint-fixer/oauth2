@@ -460,7 +460,7 @@ func RetrieveUser(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.User{User: &u}, http.StatusOK)
 }
 
-func RetrieveAllUsers(w http.ResponseWriter, r *http.Request) {
+func RetrieveAllUsersByGroup(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(router.Context(r).Param("id"))
 	if err != nil {
@@ -499,6 +499,56 @@ func RetrieveAllUsers(w http.ResponseWriter, r *http.Request) {
 	users2.User = &user
 
 	if err := userStore.Find(&users2, limit, offset, sort); err != nil {
+		if err == sql.ErrNoRows {
+			Fail(w, r, nil, http.StatusNotFound)
+			return
+		}
+		logs.Error(err)
+		Error(w, r, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	Success(w, r, views.Users{Users: users2.Users, Count: users2.Count}, http.StatusOK)
+}
+
+func RetrieveAllUsersByTeam(w http.ResponseWriter, r *http.Request) {
+
+	id, err := strconv.Atoi(router.Context(r).Param("id"))
+	if err != nil {
+		logs.Debug(err)
+		Fail(w, r, map[string]interface{}{"id": "not integer"}, http.StatusBadRequest)
+		return
+	}
+	r.ParseForm()
+	limit, err := strconv.Atoi(r.FormValue("limit"))
+	if err != nil {
+		logs.Debug(err)
+		limit = -1
+	}
+
+	offset, err := strconv.Atoi(r.FormValue("offset"))
+	if err != nil {
+		logs.Debug(err)
+		offset = -1
+	}
+
+	sort := r.FormValue("sort")
+	if sort == "false" {
+		sort = "desc"
+	} else {
+		sort = "asc"
+	}
+
+	var (
+		db        = getDB(r)
+		userStore = models.UserStore(db)
+		users2    = models.UserReply{}
+		team      = models.Team{ID: uint(id)}
+		//users2.User = models.User{GroupID:id}
+	)
+
+	users2.Teams[0] = team
+
+	if err := userStore.FindByTeam(&users2, limit, offset, sort); err != nil {
 		if err == sql.ErrNoRows {
 			Fail(w, r, nil, http.StatusNotFound)
 			return

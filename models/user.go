@@ -8,7 +8,7 @@ import (
 
 // User represent a user in the database
 type User struct {
-	ID             int64      `json:"id"`
+	ID             int64      `json:"id";gorm:"primary_key"`
 	Mail           *string    `sql:"not null;unique" json:"mail"`
 	Password       *string    `sql:"not null" json:"password"`
 	Firstname      *string    `sql:"not null" json:"firstname"`
@@ -17,7 +17,6 @@ type User struct {
 	Cause          *string    `sql:"not null" json:"cause"`
 	GroupID        uint       `json:"group_id"`
 	OldgroupID     uint       `json:"oldgroup_id"`
-	Teams          []*Team    `json:"team_ids",gorm:"many2many:teams;"`
 	Validationcode *string    `json:"validationcode"`
 	Phone          *string    `json:"phone"`
 	Address        *string    `json:"address"`
@@ -38,6 +37,7 @@ type UserArgs struct {
 type UserReply struct {
 	User  *User
 	Users []User
+	Team  *Team
 	Teams []Team
 	Count int
 }

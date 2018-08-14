@@ -1,16 +1,19 @@
 // Views for JSON responses
 package views
 
-import "github.com/quorumsco/oauth2/models"
+import (
+	usermodels "github.com/quorumsco/oauth2/models"
+	teammodels "github.com/quorumsco/teams/models"
+)
 
 // Users represents the json response for users
 type Users struct {
-	Users []models.User `json:"users"`
-	Teams []models.Team `json:"teams"`
-	Count int           `json:"count"`
+	Users []usermodels.User `json:"users"`
+	Teams []teammodels.Team `json:"teams"`
+	Count int               `json:"count"`
 }
 
 // User represents the json response for user
 type User struct {
-	User *models.User `json:"user"`
+	User *usermodels.User `json:"user"`
 }

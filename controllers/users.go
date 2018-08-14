@@ -510,6 +510,7 @@ func RetrieveAllUsersByGroup(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.Users{Users: users2.Users, Count: users2.Count}, http.StatusOK)
 }
 
+/*
 func RetrieveAllUsersByTeam(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(router.Context(r).Param("id"))
@@ -542,11 +543,11 @@ func RetrieveAllUsersByTeam(w http.ResponseWriter, r *http.Request) {
 		db        = getDB(r)
 		userStore = models.UserStore(db)
 		users2    = models.UserReply{}
-		team      = models.Team{ID: uint(id)}
+		team      = models.Team{ID_team: uint(id)}
 		//users2.User = models.User{GroupID:id}
 	)
-
-	users2.Teams[0] = team
+	users2.Team = &team
+	//users2.Teams[0] = team
 
 	if err := userStore.FindByTeam(&users2, limit, offset, sort); err != nil {
 		if err == sql.ErrNoRows {
@@ -559,7 +560,7 @@ func RetrieveAllUsersByTeam(w http.ResponseWriter, r *http.Request) {
 	}
 	Success(w, r, views.Users{Users: users2.Users, Count: users2.Count}, http.StatusOK)
 }
-
+*/
 func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom string) {
 	//var settings string
 	conf := router.Context(r).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)

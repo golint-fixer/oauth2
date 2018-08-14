@@ -3,9 +3,11 @@ package controllers
 
 import (
 	"database/sql"
+	//"encoding/json"
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/schema"
 	. "github.com/quorumsco/jsonapi"
 	"github.com/quorumsco/logs"
 	"github.com/quorumsco/oauth2/models"
@@ -67,7 +69,7 @@ func RetrieveGroupByCode_cause(w http.ResponseWriter, r *http.Request) {
 	)
 	if err := groupStore.FirstByCodeCause(&g, Code_cause); err != nil {
 
-		if ((err == sql.ErrNoRows)||(err.Error() == "record not found")) {
+		if (err == sql.ErrNoRows) || (err.Error() == "record not found") {
 			logs.Info("Groupe non trouvé")
 			Fail(w, r, nil, http.StatusNotFound)
 			return
@@ -79,7 +81,6 @@ func RetrieveGroupByCode_cause(w http.ResponseWriter, r *http.Request) {
 
 	Success(w, r, views.Group{Group: &g}, http.StatusOK)
 }
-
 
 // UpdateGroup calls the GroupSQL Save method and returns the results
 func UpdateGroup(w http.ResponseWriter, r *http.Request) {
@@ -121,12 +122,21 @@ func UpdateGroup(w http.ResponseWriter, r *http.Request) {
 // CreateGroup calls the GroupSQL Save method and returns the results
 func CreateGroup(w http.ResponseWriter, r *http.Request) {
 	var (
-		g = new(models.Group)
-
+		g   = new(models.Group)
 		err error
 	)
-	if err = Request(&views.Group{Group: g}, r); err != nil {
-		logs.Debug(err)
+
+	err = r.ParseForm()
+	if err != nil {
+		logs.Error(err)
+		Fail(w, r, map[string]interface{}{"group": err.Error()}, http.StatusBadRequest)
+		return
+	}
+
+	decoder := schema.NewDecoder()
+	err = decoder.Decode(g, r.PostForm)
+	if err != nil {
+		logs.Error(err)
 		Fail(w, r, map[string]interface{}{"group": err.Error()}, http.StatusBadRequest)
 		return
 	}
@@ -135,6 +145,7 @@ func CreateGroup(w http.ResponseWriter, r *http.Request) {
 		db         = getDB(r)
 		groupStore = models.GroupStore(db)
 	)
+
 	if err = groupStore.Save(g); err != nil {
 		logs.Error(err)
 		Error(w, r, err.Error(), http.StatusInternalServerError)

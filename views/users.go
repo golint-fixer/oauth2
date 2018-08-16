@@ -3,13 +3,13 @@ package views
 
 import (
 	usermodels "github.com/quorumsco/oauth2/models"
-	teammodels "github.com/quorumsco/teams/models"
+	//teammodels "github.com/quorumsco/teams/models"
 )
 
 // Users represents the json response for users
 type Users struct {
 	Users []usermodels.User `json:"users"`
-	Teams []teammodels.Team `json:"teams"`
+	Teams []usermodels.Team `json:"teams"`
 	Count int               `json:"count"`
 }
 

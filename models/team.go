@@ -20,7 +20,7 @@ type TeamArgs struct {
 	GroupID uint
 	UserID  int64
 	TeamID  uint
-	Users   []usermodels.User
+	Users   []User
 	Team    *Team
 }
 

@@ -282,6 +282,80 @@ func Update_Group_id_and_url(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) {
+	conf := router.Context(req).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)
+	if req.Method == "POST" {
+		req.ParseForm()
+		// encrypt the new password
+		// passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.FormValue("password")), bcrypt.DefaultCost)
+		// if err != nil {
+		// 	panic(err)
+		// }
+
+		//affecte le mail et le nouveau password hashé au user
+		u := &models.User{
+			Mail: sPtr(req.FormValue("mail")),
+			//Password: sPtr(string(passwordHash)),
+		}
+
+		//valide la formation du mail
+		errs := u.Validate()
+		if len(errs) > 0 {
+			logs.Error(errs)
+			Error(w, req, "Vous avez une ou des erreur(s) dans le mail saisi. vérifiez votre saisie.", http.StatusBadRequest)
+			//Fail(w, req, "", http.StatusInternalServerError)
+			return
+		}
+
+		//génération d'un code de validation
+		hashCode := time.Now().UnixNano()
+		code := strconv.FormatInt(hashCode, 10)
+		code2, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
+		//n := bytes.IndexByte(code2, 0)
+		code = string(code2[:])
+		code = strings.Replace(code, ".", "Z", -1)
+
+		//génération de l'url de validation
+		urlValidation := conf.Host + "/password/validation?mail=" + *u.Mail + "&code=" + code
+
+		//recupération du user par le mail et affectation des différents champs
+		var store = models.UserStore(getDB(req))
+		err = store.First(u)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			u.OldgroupID = u.GroupID
+			u.GroupID = 0000
+			u.Validationcode = &code
+			u.Password = nil
+		}
+
+		//mise à jour en base du user
+		err = store.Update(u)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			err = store.UpdateGroupIDtoZero(u)
+			if err != nil {
+				logs.Error(err)
+				Error(w, req, err.Error(), http.StatusBadRequest)
+				return
+			} else {
+				SendEmail(req, "ValidationPassword", sPtr(req.FormValue("mail")), urlValidation, *u.Firstname)
+			}
+		}
+	}
+
+	templates := getTemplates(req)
+	if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
+		logs.Error(err)
+	}
+}
+
 // Update a user password and set the group_id to "0"
 func UpdatePassword(w http.ResponseWriter, req *http.Request) {
 	conf := router.Context(req).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)
@@ -633,12 +707,11 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"\r\rL'équipe Quorum\rbonjour@quorumapp.co\n")
 	} else if type_mail == "ValidationPassword" {
 		msg = []byte("To: " + *to + "\r\n" +
-			"Subject: QUORUM | Validez le changement de votre mot de passe !\r\n" +
+			"Subject: QUORUM | Demande de changement de mot de passe !\r\n" +
 			"\r\n" +
 			"Bonjour " + prenom + ",\r" +
 			"Vous venez de faire une demande de changement de mot de passe.\rPour valider cette demande, veuillez cliquer sur le lien ci dessous:\r" +
 			url +
-			"\rAttention ! Votre mot de passe changera seulement si vous cliquez sur le lien." +
 			"\rSi vous n’avez pas fait de demande de changement de mot de passe, merci de ne pas cliquer sur le lien." +
 			"\rA très vite," +
 			"\r\rL'équipe Quorum\rbonjour@quorumapp.co\n")

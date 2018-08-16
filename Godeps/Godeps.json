@@ -159,7 +159,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/teams/models",
-			"Rev": "a4a0263b4f05450c43730884e56d0bf7c26a8432"
+			"Rev": "826f5601eddbcf335f3964dd68d2412ef8f852f4"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",

@@ -2,7 +2,6 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
 	usermodels "github.com/quorumsco/oauth2/models"
 	"time"
 	// "github.com/asaskevich/govalidator"
@@ -10,18 +9,18 @@ import (
 
 // Group represents the components of a group
 type Team struct {
-	gorm.Model
-	ID_team       uint              `json:"id_team";gorm:"primary_key"`
+	ID            uint              `json:"id";gorm:"primary_key"`
 	Name          *string           `json:"name,omitempty"`
 	GroupID       uint              `json:"groupid"`
 	Created       *time.Time        `json:"created,omitempty"`
 	User_referent *string           `json:"user_referent,omitempty"`
-	Users         []usermodels.User `json:"users,omitempty" gorm:"many2many:team_users;"`
+	Users         []usermodels.User `gorm:"many2many:team_users"`
 }
 
 type TeamArgs struct {
 	GroupID uint
 	UserID  int64
+	TeamID  uint
 	Team    *Team
 }
 

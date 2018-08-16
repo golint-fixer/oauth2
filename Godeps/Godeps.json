@@ -1,0 +1,211 @@
+{
+	"ImportPath": "github.com/quorumsco/oauth2",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/RangelReale/osin",
+			"Rev": "4acaa50ac494fbaccad4c6ef4fdb4f26ad17cf4e"
+		},
+		{
+			"ImportPath": "github.com/RangelReale/osin/example",
+			"Rev": "4acaa50ac494fbaccad4c6ef4fdb4f26ad17cf4e"
+		},
+		{
+			"ImportPath": "github.com/asaskevich/govalidator",
+			"Comment": "v2-43-g1a4bf7e",
+			"Rev": "1a4bf7e7a98e6a6484254ac41c52ef20ec30814e"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "v1.18.0-47-g168c954",
+			"Rev": "168c95418e66e019fe17b8f4f5c45aa62ff80e23"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Comment": "v1.1.0",
+			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
+		},
+		{
+			"ImportPath": "github.com/fatih/color",
+			"Comment": "v0.2.0",
+			"Rev": "87d4004f2ab62d0d255e0a38f1680aa534549fe3"
+		},
+		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "v1.2-198-g0b58b37",
+			"Rev": "0b58b37b664c21f3010e836f1b931e1d0b0b0685"
+		},
+		{
+			"ImportPath": "github.com/gorilla/schema",
+			"Comment": "v1.0.2-1-ge0e4b92",
+			"Rev": "e0e4b92809ac79a1a465c2f626c34b121e0916bd"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/golang-lru",
+			"Rev": "0a025b7e63adc15a622f29b0b2c4c3848243bbf6"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/golang-lru/simplelru",
+			"Rev": "0a025b7e63adc15a622f29b0b2c4c3848243bbf6"
+		},
+		{
+			"ImportPath": "github.com/iogo-framework/logs",
+			"Rev": "0247b60e20020bc43a369063d97b55493ec673c1"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/gorm",
+			"Comment": "v1.0-50-ga646b13",
+			"Rev": "a646b13548ec0aa812fe805b2780f460dd2771b6"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/inflection",
+			"Rev": "8f4d3a0d04ce0b7c0cf3126fb98524246d00d102"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/sqlx",
+			"Comment": "sqlx-v1.1-73-g7396209",
+			"Rev": "7396209bbeada6a4fcc28aa9408f89b2e71cac39"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/sqlx/reflectx",
+			"Comment": "sqlx-v1.1-73-g7396209",
+			"Rev": "7396209bbeada6a4fcc28aa9408f89b2e71cac39"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-111-g80f8150",
+			"Rev": "80f8150043c80fb52dee6bc863a709cdac7ec8f8"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-111-g80f8150",
+			"Rev": "80f8150043c80fb52dee6bc863a709cdac7ec8f8"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-colorable",
+			"Comment": "v0.0.6",
+			"Rev": "ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-isatty",
+			"Rev": "66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-sqlite3",
+			"Comment": "v1.2.0-61-geac1dfa",
+			"Rev": "eac1dfa2a61ebccaa117538a5bb12044f6700cd0"
+		},
+		{
+			"ImportPath": "github.com/ory-am/ladon/manager/memory",
+			"Comment": "v0.7.7",
+			"Rev": "5c5a76bf6358319cdc3f875fa748b28d2a2100ea"
+		},
+		{
+			"ImportPath": "github.com/ory/ladon",
+			"Comment": "v0.7.7",
+			"Rev": "5c5a76bf6358319cdc3f875fa748b28d2a2100ea"
+		},
+		{
+			"ImportPath": "github.com/ory/ladon/compiler",
+			"Comment": "v0.7.7",
+			"Rev": "5c5a76bf6358319cdc3f875fa748b28d2a2100ea"
+		},
+		{
+			"ImportPath": "github.com/pborman/uuid",
+			"Rev": "dee7705ef7b324f27ceb85a121c61f2c2e8ce988"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.8.0-2-g248dadf",
+			"Rev": "248dadf4e9068a0b3e79f02ed0a610d935de5302"
+		},
+		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Comment": "v1.0.0",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/application",
+			"Rev": "f979980f4d7dcc88ce58db7afeb80935fd93e4e6"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/cmd",
+			"Rev": "fe20a849183125d866e52333be2a123cefa4ad05"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/databases",
+			"Rev": "772786a1545f5628ce9dd07dea365fae2172f880"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/gojimux",
+			"Rev": "f9b92234881c6993fce09017f9445b2badd34f2e"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/jsonapi",
+			"Rev": "5368944a4a0f906171dc6c76a970e7a2aac55740"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/logs",
+			"Rev": "0247b60e20020bc43a369063d97b55493ec673c1"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/router",
+			"Rev": "0cc02b61baea488c5be99ead4e80f80b1f4bf6e7"
+		},
+		{
+			"ImportPath": "github.com/quorumsco/settings",
+			"Rev": "02c271e3ef5c7023744eb4ab8f2cab392a49b801"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/require",
+			"Comment": "v1.1.4-27-g4d4bfba",
+			"Rev": "4d4bfba8f1d1027c4fdbe371823030df51419987"
+		},
+		{
+			"ImportPath": "github.com/zenazn/goji/web",
+			"Comment": "v0.9.0-34-gbf843a1",
+			"Rev": "bf843a174a08e846246b8945f8a9a853d84a256a"
+		},
+		{
+			"ImportPath": "github.com/zenazn/goji/web/mutil",
+			"Comment": "v0.9.0-34-gbf843a1",
+			"Rev": "bf843a174a08e846246b8945f8a9a853d84a256a"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/bcrypt",
+			"Rev": "f18420efc3b4f8e9f3d51f6bd2476e92c46260e9"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/blowfish",
+			"Rev": "f18420efc3b4f8e9f3d51f6bd2476e92c46260e9"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "a6577fac2d73be281a500b310739095313165611"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "d4feaf1a7e61e1d9e79e6c4e76c6349e9cab0a03"
+		},
+		{
+			"ImportPath": "gopkg.in/bsm/ratelimit.v1",
+			"Rev": "f14ad9c78b155f69b480cfa41cb655259baac260"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v3",
+			"Comment": "v3.2.23",
+			"Rev": "ba44d4d158d4f08b4271966798f81e1d1d9b3ba3"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v3/internal/consistenthash",
+			"Comment": "v3.2.23",
+			"Rev": "ba44d4d158d4f08b4271966798f81e1d1d9b3ba3"
+		}
+	]
+}

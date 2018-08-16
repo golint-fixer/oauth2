@@ -120,10 +120,12 @@ func serve(ctx *cli.Context) error {
 	//app.Post("/users_team/:id", controllers.RetrieveAllUsersByTeam)
 	app.Patch("/users/update", controllers.Update)
 	app.Delete("/users/:id", controllers.Delete)
+
 	//app.Post("/users/updatePassword", controllers.UpdatePassword)
 	app.Post("/users/updatePassword", controllers.SendMailWithUrlForPasswordChange)
 
-	app.Post("/users/validPassword", controllers.ValidPassword)
+	//app.Post("/users/validPassword", controllers.ValidPassword)
+	app.Post("/users/validPassword", controllers.NewValidPassword)
 	app.Post("/users/sendrequesttoreferent", controllers.SendRequestToReferent)
 	app.Post("/users/validUser", controllers.ValidUser)
 

@@ -283,7 +283,9 @@ func Update_Group_id_and_url(w http.ResponseWriter, req *http.Request) {
 }
 
 func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) {
-	conf := router.Context(req).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)
+	logs.Debug("SendMailWithUrlForPasswordChange")
+	//conf := router.Context(req).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)
+
 	if req.Method == "POST" {
 		req.ParseForm()
 		// encrypt the new password
@@ -291,11 +293,21 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 		// if err != nil {
 		// 	panic(err)
 		// }
+		host := req.FormValue("Referer")
+		//génération d'un code de validation
+		hashCode := time.Now().UnixNano()
+		code := strconv.FormatInt(hashCode, 10)
+		code2, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
+		//n := bytes.IndexByte(code2, 0)
+		code = string(code2[:])
+		code = strings.Replace(code, ".", "Z", -1)
+
+		passwordHash, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
 
 		//affecte le mail et le nouveau password hashé au user
 		u := &models.User{
-			Mail: sPtr(req.FormValue("mail")),
-			//Password: sPtr(string(passwordHash)),
+			Mail:     sPtr(req.FormValue("mail")),
+			Password: sPtr(string(passwordHash)),
 		}
 
 		//valide la formation du mail
@@ -307,16 +319,8 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 			return
 		}
 
-		//génération d'un code de validation
-		hashCode := time.Now().UnixNano()
-		code := strconv.FormatInt(hashCode, 10)
-		code2, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
-		//n := bytes.IndexByte(code2, 0)
-		code = string(code2[:])
-		code = strings.Replace(code, ".", "Z", -1)
-
 		//génération de l'url de validation
-		urlValidation := conf.Host + "/password/validation?mail=" + *u.Mail + "&code=" + code
+		urlValidation := host + "?mail=" + *u.Mail + "&code=" + code
 
 		//recupération du user par le mail et affectation des différents champs
 		var store = models.UserStore(getDB(req))
@@ -329,7 +333,7 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 			u.OldgroupID = u.GroupID
 			u.GroupID = 0000
 			u.Validationcode = &code
-			u.Password = nil
+			u.Password = sPtr(string(passwordHash))
 		}
 
 		//mise à jour en base du user
@@ -353,6 +357,57 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 	templates := getTemplates(req)
 	if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
 		logs.Error(err)
+	}
+}
+
+func NewValidPassword(w http.ResponseWriter, req *http.Request) {
+
+	req.ParseForm()
+	// encrypt the new password
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.FormValue("password")), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+
+	//affecte le mail et le nouveau password hashé au user
+	u := &models.User{
+		Mail:     sPtr(req.FormValue("mail")),
+		Password: sPtr(string(passwordHash)),
+	}
+
+	var store = models.UserStore(getDB(req))
+	err = store.First(u)
+	if err != nil {
+		logs.Error(err)
+		Error(w, req, err.Error(), http.StatusBadRequest)
+		return
+	} else {
+		if *sPtr(req.FormValue("code")) == *u.Validationcode {
+			//the validation code is correct
+			//mise à jour en base du user
+			u.GroupID = u.OldgroupID
+			u.OldgroupID = 99999
+			temp := "&"
+			u.Validationcode = &temp
+			u.Password = sPtr(string(passwordHash))
+			err = store.Update(u)
+			if err != nil {
+				logs.Error(err)
+				Error(w, req, err.Error(), http.StatusBadRequest)
+				return
+			} else {
+				SendEmail(req, "Confirmation", sPtr(req.FormValue("mail")), "", *u.Firstname)
+				//Error(w, req, err.Error(), http.StatusAccepted)
+				data := "Validation du changement de mot de passe"
+				SuccessOKOr404(w, req, data)
+			}
+		} else {
+			logs.Error("Non correspondance de code de validation")
+			id := strconv.FormatInt(u.ID, 10)
+			SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id)
+			Error(w, req, "URL invalide", http.StatusUnauthorized)
+			return
+		}
 	}
 }
 

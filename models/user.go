@@ -21,6 +21,7 @@ type User struct {
 	Phone          *string    `json:"phone"`
 	Address        *string    `json:"address"`
 	Created        *time.Time `json:"created,omitempty"`
+	Teams          []Team     `gorm:"many2many:team_users"`
 }
 
 type UserLight struct {

@@ -2,14 +2,12 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
 	"time"
 	// "github.com/asaskevich/govalidator"
 )
 
 // Group represents the components of a group
 type Group struct {
-	gorm.Model
 	ID                             uint       `json:"id"`
 	Name                           *string    `json:"name,omitempty"`
 	Endofcampain                   *time.Time `json:"endofcampain"`

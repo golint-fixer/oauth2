@@ -121,11 +121,14 @@ func serve(ctx *cli.Context) error {
 	app.Patch("/users/update", controllers.Update)
 	app.Delete("/users/:id", controllers.Delete)
 
-	//app.Post("/users/updatePassword", controllers.UpdatePassword)
+	//for compatibility v0 MOBILE - IONIC
+	app.Post("/users/validPasswordForOldVersion", controllers.ValidPassword)
+	app.Post("/users/updatePasswordForOldVersion", controllers.UpdatePassword)
+
+	//for new versions -> webapp and mobile V1 (react native)
+	app.Post("/users/validPassword", controllers.NewValidPassword)
 	app.Post("/users/updatePassword", controllers.SendMailWithUrlForPasswordChange)
 
-	//app.Post("/users/validPassword", controllers.ValidPassword)
-	app.Post("/users/validPassword", controllers.NewValidPassword)
 	app.Post("/users/sendrequesttoreferent", controllers.SendRequestToReferent)
 	app.Post("/users/validUser", controllers.ValidUser)
 

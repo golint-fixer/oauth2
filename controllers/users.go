@@ -475,7 +475,7 @@ func UpdatePassword(w http.ResponseWriter, req *http.Request) {
 				Error(w, req, err.Error(), http.StatusBadRequest)
 				return
 			} else {
-				SendEmail(req, "ValidationPassword", sPtr(req.FormValue("mail")), urlValidation, *u.Firstname)
+				SendEmail(req, "ValidationPasswordOld", sPtr(req.FormValue("mail")), urlValidation, *u.Firstname)
 			}
 		}
 	}
@@ -707,24 +707,24 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"\r\n" +
 			"Bonjour " + prenom + ",\r" +
 			"Votre mot de passe a été modifié avec succès. Vous pouvez dès à present vous connecter aux applications QUORUM et reprendre la mobilisation !\r" +
-			"Attention ! Si vous n’êtes pas l’auteur de la demande de changement de mot de passe,  merci de nous contacter au plus vite par mail support@quorumapp.co ou directement au 01 79 73 40 04.\r" +
-			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorumapp.co\n")
+			"Attention ! Si vous n’êtes pas l’auteur de la demande de changement de mot de passe,  merci de nous contacter au plus vite par mail support@quorum.co ou directement au 01 79 73 40 04.\r" +
+			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorum.co\n")
 	} else if type_mail == "ConfirmationReferent" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: QUORUM | Confirmation de création de compte !\r\n" +
 			"\r\n" +
 			"Bonjour,\r" +
 			"le compte de " + prenom + " a été créé avec succès.\r\r" +
-			"Attention ! Si vous n’êtes pas l’auteur de la validation du compte,  merci de nous contacter au plus vite par mail support@quorumapp.co ou directement au 01 79 73 40 04.\r" +
-			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorumapp.co\n")
+			"Attention ! Si vous n’êtes pas l’auteur de la validation du compte,  merci de nous contacter au plus vite par mail support@quorum.co ou directement au 01 79 73 40 04.\r" +
+			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorum.co\n")
 	} else if type_mail == "ConfirmationUser" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: QUORUM | Confirmation de création de votre compte sur Quorum !\r\n" +
 			"\r\n" +
 			"Bonjour " + prenom + ",\r" +
 			"Votre compte a été créé avec succès! Vous pouvez dès à present vous connecter aux applications QUORUM et reprendre la mobilisation !\r" +
-			"Attention ! Si vous n’êtes pas l’auteur de la demande de compte,  merci de nous contacter au plus vite par mail support@quorumapp.co ou directement au 01 79 73 40 04.\r" +
-			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorumapp.co\n")
+			"Attention ! Si vous n’êtes pas l’auteur de la demande de compte,  merci de nous contacter au plus vite par mail support@quorum.co ou directement au 01 79 73 40 04.\r" +
+			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorum.co\n")
 	} else if type_mail == "NotMatching" {
 		*to = conf.User
 		msg = []byte("To: " + *to + "\r\n" +
@@ -759,7 +759,18 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"Pour valider cette demande, veuillez cliquer sur le lien ci dessous:\r" +
 			url +
 			"\rA très vite," +
-			"\r\rL'équipe Quorum\rbonjour@quorumapp.co\n")
+			"\r\rL'équipe Quorum\rbonjour@quorum.co\n")
+	} else if type_mail == "ValidationPasswordOld" {
+		msg = []byte("To: " + *to + "\r\n" +
+			"Subject: QUORUM | Validez le changement de votre mot de passe !\r\n" +
+			"\r\n" +
+			"Bonjour " + prenom + ",\r" +
+			"Vous venez de faire une demande de changement de mot de passe.\rPour valider cette demande, veuillez cliquer sur le lien ci dessous:\r" +
+			url +
+			"\rAttention ! Votre mot de passe changera seulement si vous cliquez sur le lien." +
+			"\rSi vous n’avez pas fait de demande de changement de mot de passe, merci de ne pas cliquer sur le lien." +
+			"\rA très vite," +
+			"\r\rL'équipe Quorum\rbonjour@quorum.co\n")
 	} else if type_mail == "ValidationPassword" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: QUORUM | Demande de changement de mot de passe !\r\n" +
@@ -769,7 +780,7 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			url +
 			"\rSi vous n’avez pas fait de demande de changement de mot de passe, merci de ne pas cliquer sur le lien." +
 			"\rA très vite," +
-			"\r\rL'équipe Quorum\rbonjour@quorumapp.co\n")
+			"\r\rL'équipe Quorum\rbonjour@quorum.co\n")
 	}
 	toBis := []string{*to}
 	err := smtp.SendMail(conf.Smtpserver+":"+conf.Port, auth, conf.User, toBis, msg)

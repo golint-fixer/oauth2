@@ -14,7 +14,7 @@ type User struct {
 	Firstname      *string    `sql:"not null" json:"firstname"`
 	Surname        *string    `sql:"not null" json:"surname"`
 	Role           *string    `json:"role"`
-	Cause          *string    `sql:"not null" json:"cause"`
+	Cause          *string    `json:"cause"`
 	GroupID        uint       `json:"group_id"`
 	OldgroupID     uint       `json:"oldgroup_id"`
 	Validationcode *string    `json:"validationcode"`

@@ -114,6 +114,7 @@ func serve(ctx *cli.Context) error {
 	//app.Get("/oauth2/test_ladon"),controllers.TestLadon)
 
 	app.Post("/users/register", controllers.Register)
+	app.Post("/users/newregister", controllers.NewRegister)
 	app.Post("/users/registerFromAdmin", controllers.RegisterFromAdmin)
 	app.Get("/users/:id", controllers.RetrieveUser)
 	app.Post("/users_all/:id", controllers.RetrieveAllUsersByGroup)
@@ -126,7 +127,7 @@ func serve(ctx *cli.Context) error {
 	app.Post("/users/updatePasswordForOldVersion", controllers.UpdatePassword)
 
 	//for new versions -> webapp and mobile V1 (react native)
-	app.Post("/users/validPassword", controllers.NewValidPassword)
+	app.Post("/users/savePassword", controllers.NewSavePassword)
 	app.Post("/users/updatePassword", controllers.SendMailWithUrlForPasswordChange)
 
 	app.Post("/users/sendrequesttoreferent", controllers.SendRequestToReferent)

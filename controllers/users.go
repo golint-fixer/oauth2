@@ -30,6 +30,112 @@ func sPtr(s string) *string {
 }
 
 // Creates a new user
+func NewRegister(w http.ResponseWriter, req *http.Request) {
+	if req.Method == "POST" {
+
+		req.ParseForm()
+
+		code := GenerateCode()
+		fromadmin := false
+		fromuser := false
+
+		//by default password = code
+		passwordHash, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
+		if err != nil {
+			panic(err)
+			return
+		}
+
+		//by default group ID = 0
+		groupID, err := strconv.ParseUint("0", 10, 32)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// si register user pas fait par un admin (password existe)
+		logs.Debug(req.FormValue("password"))
+		logs.Debug(req.FormValue("password") != "")
+		if req.FormValue("password") != "" {
+			passwordHash, err = bcrypt.GenerateFromPassword([]byte(req.FormValue("password")), bcrypt.DefaultCost)
+			if err != nil {
+				panic(err)
+				return
+			} else {
+				fromuser = true
+			}
+		}
+
+		// si register user fait par un admin (group_id existe)
+		logs.Debug(req.FormValue("group_id"))
+		logs.Debug(req.FormValue("group_id") != "")
+		if req.FormValue("group_id") != "" {
+			groupID, err = strconv.ParseUint(req.FormValue("group_id"), 10, 32)
+			if err != nil {
+				logs.Error(err)
+				Error(w, req, err.Error(), http.StatusBadRequest)
+				return
+			} else {
+				fromadmin = true
+			}
+		}
+
+		curTime := time.Now()
+		u := &models.User{
+			Firstname: sPtr(req.FormValue("firstname")),
+			Surname:   sPtr(req.FormValue("surname")),
+			Mail:      sPtr(req.FormValue("mail")),
+			Phone:     sPtr(req.FormValue("phone")),
+			Address:   sPtr(req.FormValue("address")),
+			Password:  sPtr(string(passwordHash)),
+			// INFO : dans ce cas Cause viens de la requête (gateway) qui est allé chercher le nom de la campagne (différent du code cause)
+			//Cause:          sPtr(req.FormValue("cause")),
+			Created:        &curTime,
+			Validationcode: sPtr(code),
+			GroupID:        uint(groupID),
+		}
+
+		errs := u.Validate()
+		if len(errs) > 0 {
+			logs.Error(errs)
+			Error(w, req, "Vous avez une ou des erreur(s) dans le formulaire d'inscription. vérifiez votre saisie (formatage du mail par exemple)", http.StatusBadRequest)
+			//Fail(w, req, "", http.StatusInternalServerError)
+			return
+		}
+
+		var store = models.UserStore(getDB(req))
+		err = store.Save(u)
+		if err != nil {
+			logs.Error(err)
+			Error(w, req, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			if fromadmin && !fromuser {
+				host1 := req.FormValue("serveurWebappForChangingPassword")
+				logs.Debug(req.FormValue("cause"))
+				// INFO : dans ce cas Cause viens de la requête (gateway) qui est allé chercher le nom de la campagne (différent du code cause)
+				urlValidation1 := host1 + "?mail=" + *u.Mail + "&code=" + code + "&new=true"
+				SendEmail(req, "NewRegisterFromAdmin", sPtr(req.FormValue("mail")), urlValidation1, req.FormValue("firstname"), req.FormValue("cause"))
+			} else if !fromadmin && fromuser {
+				host2 := req.FormValue("serveurWebappForValidationMail")
+				//génération de l'url de validation
+				urlValidation2 := host2 + "?mail=" + *u.Mail + "&code=" + code
+				SendEmail(req, "NewRegister", sPtr(req.FormValue("mail")), urlValidation2, req.FormValue("firstname"), "")
+			} else {
+				Error(w, req, "problème de distinction de type d'enregistrement : contactez le support", http.StatusNotImplemented)
+			}
+		}
+	}
+
+	templates := getTemplates(req)
+	if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
+		logs.Error(err)
+		Error(w, req, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// OLD - Creates a new user
 func Register(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "POST" {
 		req.ParseForm()
@@ -56,7 +162,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			logs.Error(errs)
 			Error(w, req, "Vous avez une ou des erreur(s) dans le formulaire d'inscription. vérifiez votre saisie (formatage du mail par exemple)", http.StatusBadRequest)
 			//Fail(w, req, "", http.StatusInternalServerError)
-			return
+
 		}
 
 		var store = models.UserStore(getDB(req))
@@ -66,7 +172,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
 		} else {
-			SendEmail(req, "Register", sPtr(req.FormValue("mail")), "", req.FormValue("firstname"))
+			SendEmail(req, "Register", sPtr(req.FormValue("mail")), "", req.FormValue("firstname"), "")
 		}
 	}
 
@@ -121,7 +227,7 @@ func RegisterFromAdmin(w http.ResponseWriter, req *http.Request) {
 			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
 		} else {
-			SendEmail(req, "RegisterFromAdmin", sPtr(req.FormValue("mail")), req.FormValue("cause"), req.FormValue("firstname"))
+			SendEmail(req, "RegisterFromAdmin", sPtr(req.FormValue("mail")), "", req.FormValue("firstname"), req.FormValue("cause"))
 		}
 	}
 
@@ -147,9 +253,9 @@ func ValidPassword(w http.ResponseWriter, req *http.Request) {
 		if *sPtr(req.FormValue("code")) == *u.Validationcode {
 			//the validation code is correct
 			//mise à jour en base du user
-			u.GroupID = u.OldgroupID
-			u.OldgroupID = 99999
-			temp := "&"
+			//u.GroupID = u.OldgroupID
+			//u.OldgroupID = 99999
+			temp := ""
 			u.Validationcode = &temp
 			err = store.Update(u)
 			if err != nil {
@@ -157,7 +263,7 @@ func ValidPassword(w http.ResponseWriter, req *http.Request) {
 				Error(w, req, err.Error(), http.StatusBadRequest)
 				return
 			} else {
-				SendEmail(req, "Confirmation", sPtr(req.FormValue("mail")), "", *u.Firstname)
+				SendEmail(req, "Confirmation", sPtr(req.FormValue("mail")), "", *u.Firstname, "")
 				//Error(w, req, err.Error(), http.StatusAccepted)
 				data := "Validation du changement de mot de passe"
 				SuccessOKOr404(w, req, data)
@@ -165,7 +271,7 @@ func ValidPassword(w http.ResponseWriter, req *http.Request) {
 		} else {
 			logs.Error("Non correspondance de code de validation")
 			id := strconv.FormatInt(u.ID, 10)
-			SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id)
+			SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id, "")
 			Error(w, req, "URL invalide", http.StatusUnauthorized)
 			return
 		}
@@ -189,9 +295,9 @@ func ValidUser(w http.ResponseWriter, req *http.Request) {
 		if *sPtr(req.FormValue("code")) == *u.Validationcode {
 			//the validation code is correct
 			//mise à jour en base du user
-			u.GroupID = u.OldgroupID
-			u.OldgroupID = 99999
-			temp := "&"
+			//u.GroupID = u.OldgroupID
+			//u.OldgroupID = 99999
+			temp := ""
 			u.Validationcode = &temp
 			err = store.Update(u)
 			if err != nil {
@@ -199,8 +305,8 @@ func ValidUser(w http.ResponseWriter, req *http.Request) {
 				Error(w, req, err.Error(), http.StatusBadRequest)
 				return
 			} else {
-				SendEmail(req, "ConfirmationUser", sPtr(req.FormValue("mail")), "", *u.Firstname)
-				SendEmail(req, "ConfirmationReferent", sPtr(req.FormValue("email_referent")), "", *u.Firstname)
+				SendEmail(req, "ConfirmationUser", sPtr(req.FormValue("mail")), "", *u.Firstname, "")
+				SendEmail(req, "ConfirmationReferent", sPtr(req.FormValue("email_referent")), "", *u.Firstname, "")
 				//Error(w, req, err.Error(), http.StatusAccepted)
 				data := "Validation du changement de mot de passe"
 				SuccessOKOr404(w, req, data)
@@ -208,11 +314,26 @@ func ValidUser(w http.ResponseWriter, req *http.Request) {
 		} else {
 			logs.Error("Non correspondance de code de validation")
 			id := strconv.FormatInt(u.ID, 10)
-			SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id)
+			SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id, "")
 			Error(w, req, "URL invalide", http.StatusUnauthorized)
 			return
 		}
 	}
+}
+
+func GenerateCode() string {
+	//generate Code ---------------------------
+	hashCode := time.Now().UnixNano()
+	code := strconv.FormatInt(hashCode, 10)
+	code2, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
+	if err != nil {
+		logs.Error(err)
+		panic(err)
+	}
+	//n := bytes.IndexByte(code2, 0)
+	code = string(code2[:])
+	code = strings.Replace(code, ".", "Z", -1)
+	return code
 }
 
 func SendRequestToReferent(w http.ResponseWriter, req *http.Request) {
@@ -237,47 +358,38 @@ func SendRequestToReferent(w http.ResponseWriter, req *http.Request) {
 	prenom_nom_mail := strings.Title(req.FormValue("firstname")) + " " + strings.Title(req.FormValue("surname")) + " (" + req.FormValue("mail") + ")"
 	req.Form.Add("validationcode", code)
 
-	Update_Group_id_and_url(w, req)
-	SendEmail(req, "ValidationUser", sPtr(req.FormValue("email_referent")), urlValidation, prenom_nom_mail)
+	Update_code(w, req)
+	SendEmail(req, "ValidationUser", sPtr(req.FormValue("email_referent")), urlValidation, prenom_nom_mail, "")
 	data := "ValidationUser"
 	SuccessOKOr404(w, req, data)
 }
 
-func Update_Group_id_and_url(w http.ResponseWriter, req *http.Request) {
+func Update_code(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "POST" {
 		req.ParseForm()
 
 		//string to uint-----------------
-		temp, err := strconv.ParseUint(req.FormValue("group_id"), 10, 0)
-		if err != nil {
-			logs.Debug(err)
-			Fail(w, req, map[string]interface{}{"group_id": "not integer"}, http.StatusBadRequest)
-			return
-		}
-		groupid := uint(temp)
+		// temp, err := strconv.ParseUint(req.FormValue("group_id"), 10, 0)
+		// if err != nil {
+		// 	logs.Debug(err)
+		// 	Fail(w, req, map[string]interface{}{"group_id": "not integer"}, http.StatusBadRequest)
+		// 	return
+		// }
+		//groupid := uint(temp)
 
 		u := &models.User{
-			Mail:           sPtr(req.FormValue("mail")),
-			OldgroupID:     groupid,
-			GroupID:        0000,
+			Mail: sPtr(req.FormValue("mail")),
+			//OldgroupID:     groupid,
+			//GroupID:        0000,
 			Validationcode: sPtr(req.FormValue("validationcode")),
 		}
 		//mise à jour en base du user
 		var store = models.UserStore(getDB(req))
-		err = store.Update(u)
+		err := store.Update(u)
 		if err != nil {
 			logs.Error(err)
 			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
-		} else {
-			err = store.UpdateGroupIDtoZero(u)
-			if err != nil {
-				logs.Error(err)
-				Error(w, req, err.Error(), http.StatusBadRequest)
-				return
-			} else {
-				//SendEmail(req,"ValidationPassword",sPtr(req.FormValue("mail")),urlValidation,*u.Firstname)
-			}
 		}
 	}
 }
@@ -294,6 +406,7 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 		// 	panic(err)
 		// }
 		host := req.FormValue("Referer")
+
 		//génération d'un code de validation
 		hashCode := time.Now().UnixNano()
 		code := strconv.FormatInt(hashCode, 10)
@@ -330,10 +443,10 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
 		} else {
-			u.OldgroupID = u.GroupID
-			u.GroupID = 0000
+			//u.OldgroupID = u.GroupID
+			//u.GroupID = 0000
 			u.Validationcode = &code
-			u.Password = sPtr(string(passwordHash))
+			//u.Password = sPtr(string(passwordHash))
 		}
 
 		//mise à jour en base du user
@@ -343,14 +456,9 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
 		} else {
-			err = store.UpdateGroupIDtoZero(u)
-			if err != nil {
-				logs.Error(err)
-				Error(w, req, err.Error(), http.StatusBadRequest)
-				return
-			} else {
-				SendEmail(req, "ValidationPassword", sPtr(req.FormValue("mail")), urlValidation, *u.Firstname)
-			}
+			//err = store.UpdateGroupIDtoZero(u)
+			SendEmail(req, "ValidationPassword", sPtr(req.FormValue("mail")), urlValidation, *u.Firstname, "")
+
 		}
 	}
 
@@ -360,7 +468,7 @@ func SendMailWithUrlForPasswordChange(w http.ResponseWriter, req *http.Request) 
 	}
 }
 
-func NewValidPassword(w http.ResponseWriter, req *http.Request) {
+func NewSavePassword(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 	// encrypt the new password
@@ -385,9 +493,9 @@ func NewValidPassword(w http.ResponseWriter, req *http.Request) {
 		if *sPtr(req.FormValue("code")) == *u.Validationcode {
 			//the validation code is correct
 			//mise à jour en base du user
-			u.GroupID = u.OldgroupID
-			u.OldgroupID = 99999
-			temp := "&"
+			//u.GroupID = u.OldgroupID
+			//u.OldgroupID = 99999
+			temp := ""
 			u.Validationcode = &temp
 			u.Password = sPtr(string(passwordHash))
 			err = store.Update(u)
@@ -396,7 +504,7 @@ func NewValidPassword(w http.ResponseWriter, req *http.Request) {
 				Error(w, req, err.Error(), http.StatusBadRequest)
 				return
 			} else {
-				SendEmail(req, "Confirmation", sPtr(req.FormValue("mail")), "", *u.Firstname)
+				SendEmail(req, "Confirmation", sPtr(req.FormValue("mail")), "", *u.Firstname, "")
 				//Error(w, req, err.Error(), http.StatusAccepted)
 				data := "Validation du changement de mot de passe"
 				SuccessOKOr404(w, req, data)
@@ -404,14 +512,14 @@ func NewValidPassword(w http.ResponseWriter, req *http.Request) {
 		} else {
 			logs.Error("Non correspondance de code de validation")
 			id := strconv.FormatInt(u.ID, 10)
-			SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id)
+			SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id, "")
 			Error(w, req, "URL invalide", http.StatusUnauthorized)
 			return
 		}
 	}
 }
 
-// Update a user password and set the group_id to "0"
+// NEW - Update a user password and set the group_id to "0"
 func UpdatePassword(w http.ResponseWriter, req *http.Request) {
 	conf := router.Context(req).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)
 	if req.Method == "POST" {
@@ -456,8 +564,8 @@ func UpdatePassword(w http.ResponseWriter, req *http.Request) {
 			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
 		} else {
-			u.OldgroupID = u.GroupID
-			u.GroupID = 0000
+			//u.OldgroupID = u.GroupID
+			//u.GroupID = 0000
 			u.Validationcode = &code
 			u.Password = sPtr(string(passwordHash))
 		}
@@ -469,14 +577,7 @@ func UpdatePassword(w http.ResponseWriter, req *http.Request) {
 			Error(w, req, err.Error(), http.StatusBadRequest)
 			return
 		} else {
-			err = store.UpdateGroupIDtoZero(u)
-			if err != nil {
-				logs.Error(err)
-				Error(w, req, err.Error(), http.StatusBadRequest)
-				return
-			} else {
-				SendEmail(req, "ValidationPasswordOld", sPtr(req.FormValue("mail")), urlValidation, *u.Firstname)
-			}
+			SendEmail(req, "ValidationPasswordOld", sPtr(req.FormValue("mail")), urlValidation, *u.Firstname, "")
 		}
 	}
 
@@ -690,7 +791,7 @@ func RetrieveAllUsersByTeam(w http.ResponseWriter, r *http.Request) {
 	Success(w, r, views.Users{Users: users2.Users, Count: users2.Count}, http.StatusOK)
 }
 */
-func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom string) {
+func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom string, campagne string) {
 	//var settings string
 	conf := router.Context(r).Env["Application"].(*application.Application).Components["Smtp"].(settings.Smtp)
 	// Set up authentication information.
@@ -708,7 +809,7 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"Bonjour " + prenom + ",\r" +
 			"Votre mot de passe a été modifié avec succès. Vous pouvez dès à present vous connecter aux applications QUORUM et reprendre la mobilisation !\r" +
 			"Attention ! Si vous n’êtes pas l’auteur de la demande de changement de mot de passe,  merci de nous contacter au plus vite par mail support@quorum.co ou directement au 01 79 73 40 04.\r" +
-			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorum.co\n")
+			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rteam@quorum.co\n")
 	} else if type_mail == "ConfirmationReferent" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: QUORUM | Confirmation de création de compte !\r\n" +
@@ -716,15 +817,15 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"Bonjour,\r" +
 			"le compte de " + prenom + " a été créé avec succès.\r\r" +
 			"Attention ! Si vous n’êtes pas l’auteur de la validation du compte,  merci de nous contacter au plus vite par mail support@quorum.co ou directement au 01 79 73 40 04.\r" +
-			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorum.co\n")
+			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rteam@quorum.co\n")
 	} else if type_mail == "ConfirmationUser" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: QUORUM | Confirmation de création de votre compte sur Quorum !\r\n" +
 			"\r\n" +
 			"Bonjour " + prenom + ",\r" +
 			"Votre compte a été créé avec succès! Vous pouvez dès à present vous connecter aux applications QUORUM et reprendre la mobilisation !\r" +
-			"Attention ! Si vous n’êtes pas l’auteur de la demande de compte,  merci de nous contacter au plus vite par mail support@quorum.co ou directement au 01 79 73 40 04.\r" +
-			"\r\rL'équipe Quorum\rMobilisons, sans limites.\rbonjour@quorum.co\n")
+			"Attention ! Si vous n’êtes pas l’auteur de la demande de compte,  merci de nous contacter au plus vite par mail team@quorum.co ou directement au 01 79 73 40 04.\r" +
+			"\r\rL'équipe Quorum\rMobilisons, sans limites.\team@quorum.co\n")
 	} else if type_mail == "NotMatching" {
 		*to = conf.User
 		msg = []byte("To: " + *to + "\r\n" +
@@ -741,13 +842,32 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"Votre compte sera activé dès que votre référent l'aura fait.\r" +
 			"l'équipe QUORUM" +
 			"\r\n")
+	} else if type_mail == "NewRegister" {
+		msg = []byte("To: " + *to + "\r\n" +
+			"Subject: demande de compte\r\n" +
+			"\r\n" +
+			"Bonjour " + prenom + ",\r" +
+			"Merci de cliquer sur le lien ci dessous afin que votre compte soit activé.\r" +
+			url + "\r" +
+			"l'équipe QUORUM" +
+			"\r\n")
 	} else if type_mail == "RegisterFromAdmin" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: demande de compte\r\n" +
 			"\r\n" +
 			"Bravo " + prenom + "!\r" +
-			"Vous faites maintenant partie de la campagne de mobilisation '" + url + "'.\r" +
+			"Vous faites maintenant partie de la campagne de mobilisation '" + campagne + "'.\r" +
 			"Afin de pouvoir accéder à votre application, merci d'initialiser votre mot de passe via 'mot de passe oublié' sur votre écran d'authentification.\r" +
+			"l'équipe QUORUM" +
+			"\r\n")
+	} else if type_mail == "NewRegisterFromAdmin" {
+		msg = []byte("To: " + *to + "\r\n" +
+			"Subject: demande de compte\r\n" +
+			"\r\n" +
+			"Bravo " + prenom + "!\r" +
+			"Vous faites maintenant partie de la campagne de mobilisation '" + campagne + "'.\r" +
+			"Afin de pouvoir accéder à votre application, merci de cliquer sur le lien ci dessous afin d'initialiser votre mot de passe.\r" +
+			url + "\r" +
 			"l'équipe QUORUM" +
 			"\r\n")
 	} else if type_mail == "ValidationUser" {
@@ -759,7 +879,7 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"Pour valider cette demande, veuillez cliquer sur le lien ci dessous:\r" +
 			url +
 			"\rA très vite," +
-			"\r\rL'équipe Quorum\rbonjour@quorum.co\n")
+			"\r\rL'équipe Quorum\rteam@quorum.co\n")
 	} else if type_mail == "ValidationPasswordOld" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: QUORUM | Validez le changement de votre mot de passe !\r\n" +
@@ -770,7 +890,7 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			"\rAttention ! Votre mot de passe changera seulement si vous cliquez sur le lien." +
 			"\rSi vous n’avez pas fait de demande de changement de mot de passe, merci de ne pas cliquer sur le lien." +
 			"\rA très vite," +
-			"\r\rL'équipe Quorum\rbonjour@quorum.co\n")
+			"\r\rL'équipe Quorum\rteam@quorum.co\n")
 	} else if type_mail == "ValidationPassword" {
 		msg = []byte("To: " + *to + "\r\n" +
 			"Subject: QUORUM | Demande de changement de mot de passe !\r\n" +
@@ -780,7 +900,7 @@ func SendEmail(r *http.Request, type_mail string, to *string, url string, prenom
 			url +
 			"\rSi vous n’avez pas fait de demande de changement de mot de passe, merci de ne pas cliquer sur le lien." +
 			"\rA très vite," +
-			"\r\rL'équipe Quorum\rbonjour@quorum.co\n")
+			"\r\rL'équipe Quorum\rteam@quorum.co\n")
 	}
 	toBis := []string{*to}
 	err := smtp.SendMail(conf.Smtpserver+":"+conf.Port, auth, conf.User, toBis, msg)

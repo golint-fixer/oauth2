@@ -132,6 +132,7 @@ func serve(ctx *cli.Context) error {
 
 	app.Post("/users/sendrequesttoreferent", controllers.SendRequestToReferent)
 	app.Post("/users/validUser", controllers.ValidUser)
+	app.Post("/users/existMail", controllers.ExistMail)
 
 	app.Get("/groups", controllers.RetrieveGroupCollection)
 	app.Get("/groups/retrieve_mail_referent/:cause", controllers.RetrieveGroupByCode_cause)

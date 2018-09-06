@@ -321,6 +321,38 @@ func ValidUser(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func ExistMail(w http.ResponseWriter, req *http.Request) {
+
+	logs.Debug(req.FormValue("mail"))
+	u := &models.User{
+		Mail: sPtr(req.FormValue("mail")),
+
+		// only to pass the "Store" control
+		Password: sPtr(req.FormValue("mail")),
+	}
+	var store = models.UserStore(getDB(req))
+	err := store.First(u)
+	if err != nil {
+		data := err
+		SuccessOKOr404(w, req, data)
+		// logs.Error(err)
+		// Error(w, req, err.Error(), http.StatusUnauthorized)
+		return
+	} else {
+		if *sPtr(req.FormValue("mail")) == *u.Mail {
+
+			logs.Error("Correspondance de mail")
+			Error(w, req, "Correspondance de mail", http.StatusUnauthorized)
+			return
+
+		} else {
+			data := "Non correspondance de mail"
+			SuccessOKOr404(w, req, data)
+
+		}
+	}
+}
+
 func GenerateCode() string {
 	//generate Code ---------------------------
 	hashCode := time.Now().UnixNano()

@@ -107,8 +107,11 @@ func NewRegister(w http.ResponseWriter, req *http.Request) {
 		var store = models.UserStore(getDB(req))
 		err = store.Save(u)
 		if err != nil {
+
+			//StatusConflict
+			//StatusConflict
 			logs.Error(err)
-			Error(w, req, err.Error(), http.StatusBadRequest)
+			Error(w, req, err.Error(), http.StatusConflict)
 			return
 		} else {
 			if fromadmin && !fromuser {
@@ -127,12 +130,12 @@ func NewRegister(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 	}
-
-	templates := getTemplates(req)
-	if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
-		logs.Error(err)
-		Error(w, req, err.Error(), http.StatusInternalServerError)
-	}
+	SuccessOKOr404(w, req, "mes couilles sur la commode")
+	// templates := getTemplates(req)
+	// if err := templates["users/register"].ExecuteTemplate(w, "base", nil); err != nil {
+	// 	logs.Error(err)
+	// 	//Error(w, req, err.Error(), http.StatusInternalServerError)
+	// }
 }
 
 // OLD - Creates a new user
@@ -292,24 +295,29 @@ func ValidUser(w http.ResponseWriter, req *http.Request) {
 		Error(w, req, err.Error(), http.StatusBadRequest)
 		return
 	} else {
-		if *sPtr(req.FormValue("code")) == *u.Validationcode {
-			//the validation code is correct
-			//mise à jour en base du user
-			//u.GroupID = u.OldgroupID
-			//u.OldgroupID = 99999
-			temp := ""
-			u.Validationcode = &temp
-			err = store.Update(u)
-			if err != nil {
-				logs.Error(err)
-				Error(w, req, err.Error(), http.StatusBadRequest)
-				return
+		if u.Validationcode != nil {
+			codeTMP := *u.Validationcode
+			if codeTMP == req.FormValue("code") {
+				temp := ""
+				u.Validationcode = &temp
+				err = store.Update(u)
+				if err != nil {
+					logs.Error(err)
+					Error(w, req, err.Error(), http.StatusBadRequest)
+					return
+				} else {
+					SendEmail(req, "ConfirmationUser", sPtr(req.FormValue("mail")), "", *u.Firstname, "")
+					//SendEmail(req, "ConfirmationReferent", sPtr(req.FormValue("email_referent")), "", *u.Firstname, "")
+					//Error(w, req, err.Error(), http.StatusAccepted)
+					data := "Validation du changement de mot de passe"
+					SuccessOKOr404(w, req, data)
+				}
 			} else {
-				SendEmail(req, "ConfirmationUser", sPtr(req.FormValue("mail")), "", *u.Firstname, "")
-				SendEmail(req, "ConfirmationReferent", sPtr(req.FormValue("email_referent")), "", *u.Firstname, "")
-				//Error(w, req, err.Error(), http.StatusAccepted)
-				data := "Validation du changement de mot de passe"
-				SuccessOKOr404(w, req, data)
+				logs.Error("Non correspondance de code de validation")
+				id := strconv.FormatInt(u.ID, 10)
+				SendEmail(req, "NotMatching", sPtr(req.FormValue("mail")), "", id, "")
+				Error(w, req, "URL invalide", http.StatusUnauthorized)
+				return
 			}
 		} else {
 			logs.Error("Non correspondance de code de validation")
@@ -318,6 +326,7 @@ func ValidUser(w http.ResponseWriter, req *http.Request) {
 			Error(w, req, "URL invalide", http.StatusUnauthorized)
 			return
 		}
+
 	}
 }
 

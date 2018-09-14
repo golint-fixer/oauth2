@@ -61,8 +61,17 @@ func getUserInfos(username string, password string, origin string, r *http.Reque
 	if u.ID == 0 {
 		return "404", errors.New("no such user")
 	}
+	//codeTMP := u.Validationcode
+
 	if err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(password)); err != nil {
 		return "400", errors.New("wrong password")
+	}
+
+	if u.Validationcode != nil {
+		codeTMP := *u.Validationcode
+		if codeTMP != "" {
+			return "412", errors.New("no email validation")
+		}
 	}
 	// if u.GroupID == 0 {
 	// 	return "0", errors.New("User not activate")
@@ -73,12 +82,12 @@ func getUserInfos(username string, password string, origin string, r *http.Reque
 
 	if u.Validationcode != nil && *code != "" {
 		if u.GroupID == 0 {
-			return "401", errors.New("User don't have a cause")
+			return "426", errors.New("User don't have a cause")
 		} else {
 			return "401", errors.New("Very strange... - contact support")
 		}
 	} else if u.GroupID == 0 {
-		return "401", errors.New("User don't have a cause")
+		return "426", errors.New("User don't have a cause")
 	}
 
 	//----- CONTROLE ACCES WEBAPP -----------//
@@ -131,14 +140,20 @@ func Token(w http.ResponseWriter, r *http.Request) {
 					codeErreur = http.StatusBadRequest
 					resp.ErrorStatusCode = http.StatusBadRequest
 				case "401":
-					codeErreur = http.StatusUnauthorized
-					resp.ErrorStatusCode = http.StatusUnauthorized
+					codeErreur = http.StatusBadRequest
+					resp.ErrorStatusCode = http.StatusBadRequest
+				case "426":
+					codeErreur = http.StatusUpgradeRequired
+					resp.ErrorStatusCode = http.StatusUpgradeRequired
 				case "403":
 					codeErreur = http.StatusForbidden
 					resp.ErrorStatusCode = http.StatusForbidden
 				case "404":
 					codeErreur = http.StatusNotFound
 					resp.ErrorStatusCode = http.StatusNotFound
+				case "412":
+					codeErreur = http.StatusPreconditionFailed
+					resp.ErrorStatusCode = http.StatusPreconditionFailed
 				default:
 					codeErreur = http.StatusBadRequest
 					resp.ErrorStatusCode = http.StatusBadRequest

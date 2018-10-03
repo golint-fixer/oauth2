@@ -1,0 +1,57 @@
+[submodule "vendor/github.com/RangelReale/osin"]
+	path = vendor/github.com/RangelReale/osin
+	url = https://github.com/RangelReale/osin
+[submodule "vendor/github.com/pborman/uuid"]
+	path = vendor/github.com/pborman/uuid
+	url = https://github.com/pborman/uuid
+[submodule "vendor/github.com/google/uuid"]
+	path = vendor/github.com/google/uuid
+	url = https://github.com/google/uuid
+[submodule "vendor/github.com/codegangsta/cli"]
+	path = vendor/github.com/codegangsta/cli
+	url = https://github.com/codegangsta/cli
+[submodule "vendor/github.com/jinzhu/gorm"]
+	path = vendor/github.com/jinzhu/gorm
+	url = https://github.com/jinzhu/gorm
+[submodule "vendor/github.com/jinzhu/inflection"]
+	path = vendor/github.com/jinzhu/inflection
+	url = https://github.com/jinzhu/inflection
+[submodule "vendor/github.com/quorumsco/application"]
+	path = vendor/github.com/quorumsco/application
+	url = https://github.com/quorumsco/application
+[submodule "vendor/github.com/quorumsco/logs"]
+	path = vendor/github.com/quorumsco/logs
+	url = https://github.com/quorumsco/logs
+[submodule "vendor/github.com/fatih/color"]
+	path = vendor/github.com/fatih/color
+	url = https://github.com/fatih/color
+[submodule "vendor/github.com/quorumsco/router"]
+	path = vendor/github.com/quorumsco/router
+	url = https://github.com/quorumsco/router
+[submodule "vendor/github.com/zenazn/goji"]
+	path = vendor/github.com/zenazn/goji
+	url = https://github.com/zenazn/goji
+[submodule "vendor/github.com/quorumsco/cmd"]
+	path = vendor/github.com/quorumsco/cmd
+	url = https://github.com/quorumsco/cmd
+[submodule "vendor/github.com/quorumsco/databases"]
+	path = vendor/github.com/quorumsco/databases
+	url = https://github.com/quorumsco/databases
+[submodule "vendor/github.com/go-sql-driver/mysql"]
+	path = vendor/github.com/go-sql-driver/mysql
+	url = https://github.com/go-sql-driver/mysql
+[submodule "vendor/github.com/jmoiron/sqlx"]
+	path = vendor/github.com/jmoiron/sqlx
+	url = https://github.com/jmoiron/sqlx
+[submodule "vendor/github.com/lib/pq"]
+	path = vendor/github.com/lib/pq
+	url = https://github.com/lib/pq
+[submodule "vendor/github.com/mattn/go-sqlite3"]
+	path = vendor/github.com/mattn/go-sqlite3
+	url = https://github.com/mattn/go-sqlite3
+[submodule "vendor/github.com/quorumsco/gojimux"]
+	path = vendor/github.com/quorumsco/gojimux
+	url = https://github.com/quorumsco/gojimux
+[submodule "vendor/github.com/quorumsco/settings"]
+	path = vendor/github.com/quorumsco/settings
+	url = https://github.com/quorumsco/settings

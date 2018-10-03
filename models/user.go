@@ -2,8 +2,9 @@
 package models
 
 import (
-	"github.com/asaskevich/govalidator"
 	"time"
+
+	"github.com/asaskevich/govalidator"
 )
 
 // User represent a user in the database
@@ -26,6 +27,17 @@ type User struct {
 
 type UserLight struct {
 	ID int64 `json:"id"`
+}
+
+/*
+UserInfos is used for gateway token communication.
+
+Fields being required by the gateway should be declared here and retrieved from this structure.
+*/
+type UserInfos struct {
+	UserLight
+	GroupID uint   `json:"group_id"`
+	Role    string `json:"role"`
 }
 
 // UserArgs is used in the RPC communications between the gateway and Users

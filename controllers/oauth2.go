@@ -2,8 +2,8 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -48,7 +48,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 }
 
 // Returns the user infos from the database using the credentials
-func getUserInfos(username string, password string, origin string, r *http.Request) (string, error) {
+func getUserInfos(username string, password string, origin string, r *http.Request) (models.UserInfos, error, int) {
 	var (
 		u         = models.User{Mail: &username, Password: sPtr(password)}
 		db        = getDB(r)
@@ -56,21 +56,21 @@ func getUserInfos(username string, password string, origin string, r *http.Reque
 	)
 	if err := userStore.First(&u); err != nil {
 		logs.Error(err)
-		return "500", err
+		return models.UserInfos{}, err, http.StatusInternalServerError
 	}
 	if u.ID == 0 {
-		return "404", errors.New("no such user")
+		return models.UserInfos{}, errors.New("no such user"), 404
 	}
 	//codeTMP := u.Validationcode
 
 	if err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(password)); err != nil {
-		return "400", errors.New("wrong password")
+		return models.UserInfos{}, errors.New("wrong password"), http.StatusBadRequest
 	}
 
 	if u.Validationcode != nil {
 		codeTMP := *u.Validationcode
 		if codeTMP != "" {
-			return "412", errors.New("no email validation")
+			return models.UserInfos{}, errors.New("no email validation"), http.StatusPreconditionFailed
 		}
 	}
 	// if u.GroupID == 0 {
@@ -82,12 +82,12 @@ func getUserInfos(username string, password string, origin string, r *http.Reque
 
 	if u.Validationcode != nil && *code != "" {
 		if u.GroupID == 0 {
-			return "426", errors.New("User don't have a cause")
+			return models.UserInfos{}, errors.New("User don't have a cause"), http.StatusUpgradeRequired
 		} else {
-			return "401", errors.New("Very strange... - contact support")
+			return models.UserInfos{}, errors.New("Very strange... - contact support"), http.StatusUnauthorized
 		}
 	} else if u.GroupID == 0 {
-		return "426", errors.New("User don't have a cause")
+		return models.UserInfos{}, errors.New("User don't have a cause"), http.StatusUpgradeRequired
 	}
 
 	//----- CONTROLE ACCES WEBAPP -----------//
@@ -97,11 +97,11 @@ func getUserInfos(username string, password string, origin string, r *http.Reque
 		if u.Role == nil || *role == "" {
 			logs.Debug("can't access")
 			//logs.Debug(*u.Role)
-			return "403", errors.New("User don't have the permission to access the webapp")
+			return models.UserInfos{}, errors.New("User don't have the permission to access the webapp"), http.StatusForbidden
 		} else if *u.Role != "admin" {
 			logs.Debug("can't access")
 			//logs.Debug(*u.Role)
-			return "403", errors.New("User don't have the permission to access the webapp")
+			return models.UserInfos{}, errors.New("User don't have the permission to access the webapp"), http.StatusForbidden
 		}
 		logs.Debug("can access, role:")
 		logs.Debug(*u.Role)
@@ -109,9 +109,13 @@ func getUserInfos(username string, password string, origin string, r *http.Reque
 
 	//----- END CONTROLE ACCES WEBAPP -----------//
 
-	userInfos := fmt.Sprintf("%d:%d", u.ID, u.GroupID)
+	userInfos := models.UserInfos{
+		models.UserLight{u.ID},
+		u.GroupID,
+		*u.Role,
+	}
 
-	return userInfos, nil
+	return userInfos, nil, http.StatusFound
 }
 
 // Token endpoint
@@ -130,39 +134,26 @@ func Token(w http.ResponseWriter, r *http.Request) {
 		case osin.REFRESH_TOKEN:
 			ar.Authorized = true
 		case osin.PASSWORD:
-			userInfos, err := getUserInfos(ar.Username, ar.Password, r.FormValue("Origin"), r)
+			userInfos, err, code := getUserInfos(ar.Username, ar.Password, r.FormValue("Origin"), r)
 			if err != nil {
 				resp.IsError = true
 				resp.InternalError = err
-				logs.Error(err)
-				switch userInfos {
-				case "400":
-					codeErreur = http.StatusBadRequest
-					resp.ErrorStatusCode = http.StatusBadRequest
-				case "401":
-					codeErreur = http.StatusBadRequest
-					resp.ErrorStatusCode = http.StatusBadRequest
-				case "426":
-					codeErreur = http.StatusUpgradeRequired
-					resp.ErrorStatusCode = http.StatusUpgradeRequired
-				case "403":
-					codeErreur = http.StatusForbidden
-					resp.ErrorStatusCode = http.StatusForbidden
-				case "404":
-					codeErreur = http.StatusNotFound
-					resp.ErrorStatusCode = http.StatusNotFound
-				case "412":
-					codeErreur = http.StatusPreconditionFailed
-					resp.ErrorStatusCode = http.StatusPreconditionFailed
-				default:
-					codeErreur = http.StatusBadRequest
-					resp.ErrorStatusCode = http.StatusBadRequest
-				}
-
+				resp.ErrorStatusCode = code
+				codeErreur = code
 			} else {
 				ar.Authorized = true
 			}
-			ar.UserData = userInfos
+
+			payload, err := json.Marshal(userInfos)
+			if err != nil {
+				logs.Error("Cannot marshal user datas to Json: ", err)
+				resp.IsError = true
+				resp.InternalError = errors.New(http.StatusText(http.StatusInternalServerError))
+				resp.ErrorStatusCode = http.StatusInternalServerError
+			}
+
+			ar.UserData = string(payload)
+
 		}
 		server.FinishAccessRequest(resp, r, ar)
 	}
@@ -258,7 +249,11 @@ func Info(w http.ResponseWriter, r *http.Request) {
 			resp.Output["scope"] = ir.AccessData.Scope
 		}
 		if ir.AccessData.UserData != nil {
-			resp.Output["owner"] = ir.AccessData.UserData.(string)
+			var payload models.UserInfos
+
+			if err := json.Unmarshal([]byte(ir.AccessData.UserData.(string)), &payload); err == nil {
+				resp.Output["owner"] = payload
+			}
 		}
 		server.FinishInfoRequest(resp, r, ir)
 	}

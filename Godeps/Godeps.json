@@ -50,10 +50,6 @@
 			"Rev": "0a025b7e63adc15a622f29b0b2c4c3848243bbf6"
 		},
 		{
-			"ImportPath": "github.com/iogo-framework/logs",
-			"Rev": "0247b60e20020bc43a369063d97b55493ec673c1"
-		},
-		{
 			"ImportPath": "github.com/jinzhu/gorm",
 			"Comment": "v1.0-50-ga646b13",
 			"Rev": "a646b13548ec0aa812fe805b2780f460dd2771b6"
@@ -127,7 +123,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/application",
-			"Rev": "f979980f4d7dcc88ce58db7afeb80935fd93e4e6"
+			"Rev": "ef087951b0a2b0b805f34be7c9aa431aa9f530c0"
 		},
 		{
 			"ImportPath": "github.com/quorumsco/cmd",
@@ -143,7 +139,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/jsonapi",
-			"Rev": "5368944a4a0f906171dc6c76a970e7a2aac55740"
+			"Rev": "c37f665829a527cb37ae4fda45280686be330fb6"
 		},
 		{
 			"ImportPath": "github.com/quorumsco/logs",
@@ -155,7 +151,7 @@
 		},
 		{
 			"ImportPath": "github.com/quorumsco/settings",
-			"Rev": "02c271e3ef5c7023744eb4ab8f2cab392a49b801"
+			"Rev": "6281208ef2fac0d7589f2cc49eaceddaf82ee9ae"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",

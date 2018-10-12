@@ -87,6 +87,7 @@ func NewRegister(w http.ResponseWriter, req *http.Request) {
 			Surname:   sPtr(req.FormValue("surname")),
 			Mail:      sPtr(req.FormValue("mail")),
 			Phone:     sPtr(req.FormValue("phone")),
+			Role:      sPtr(req.FormValue("role")),
 			Address:   sPtr(req.FormValue("address")),
 			Password:  sPtr(string(passwordHash)),
 			// INFO : dans ce cas Cause viens de la requête (gateway) qui est allé chercher le nom de la campagne (différent du code cause)

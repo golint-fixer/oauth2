@@ -21,6 +21,7 @@ type User struct {
 	Validationcode *string    `json:"validationcode"`
 	Phone          *string    `json:"phone"`
 	Address        *string    `json:"address"`
+	Location       *string    `json:"location,omitempty"` // as "lat,lon" (for elasticsearch)
 	Created        *time.Time `json:"created,omitempty"`
 	Teams          []Team     `gorm:"many2many:team_users"`
 }
